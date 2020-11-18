@@ -249,14 +249,13 @@ class MessagesController extends Controller
         $allMessages = null;
         if(!isset($request['last_date']) || $request['last_date'] == null){
             $query = Chatify::fetchMessagesQuery($request['id'], $request['type'])->where('created_at', '<', Carbon::now())->orderBy('created_at', 'desc')->limit(20);       
-            $lastDate = $query->get()->reverse()->first()->created_at;
         }else{
             $query = Chatify::fetchMessagesQuery($request['id'], $request['type'])->where('created_at', '<', $request['last_date'])->orderBy('created_at', 'desc')->limit(20);       
-            $lastDate = $query->get()->reverse()->first()->created_at;
         }
      
         $messages = $query->get()->reverse();
         if ($query->count() > 0) {
+            $lastDate = $query->get()->reverse()->first()->created_at;
             foreach ($messages as $message) {
                     $newID = $request['type'].'-'.$message->id;
                     $allMessages .= Chatify::messageCard(
