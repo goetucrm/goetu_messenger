@@ -911,7 +911,7 @@ function setActiveStatus(status, user_id) {
 $(document).ready(function () {
     // get contacts list
     getContacts();
-    alert();
+    alert('here');
     // get contacts list
     getFavoritesList();
 
@@ -962,6 +962,7 @@ $(document).ready(function () {
 
     // hide showing button for info section.
     $('.show-infoSide').on('click', function () {
+        alert($(this).attr('class'))
         $(this).hide();
     });
 
