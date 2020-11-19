@@ -911,7 +911,7 @@ function setActiveStatus(status, user_id) {
 $(document).ready(function () {
     // get contacts list
     getContacts();
-
+    console.log("Test");
     // get contacts list
     getFavoritesList();
 
