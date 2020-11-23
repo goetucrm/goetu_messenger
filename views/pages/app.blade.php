@@ -5,7 +5,7 @@
         {{-- Header and search bar --}}
         <div class="m-header">
             <nav>
-                <a href="#"><i class="fas fa-inbox"></i> <span class="messenger-headTitle">MESSAGES</span> </a>
+                <a href="#"><i class="fas fa-inbox"></i> <span class="messenger-headTitle">GoETU MESSENGER</span> </a>
                 {{-- header buttons --}}
                 <nav class="m-header-right">
                     <a href="#"><i class="fas fa-cog settings-btn"></i></a>
@@ -13,7 +13,7 @@
                 </nav>
             </nav>
             {{-- Search input --}}
-            <input type="text" class="messenger-search" placeholder="Search" />
+            <input type="text" class="messenger-search from-control" placeholder="Search" />
             {{-- Tabs --}}
             <div class="messenger-listView-tabs">
                 <a href="#" @if($route == 'user') class="active-tab" @endif data-view="users">
@@ -40,11 +40,25 @@
                
            </div>
 
-           {{-- ---------------- [ Group Tab ] ---------------- --}}
-           <div class="@if($route == 'group') show @endif messenger-tab app-scroll" data-view="groups">
+            {{-- ---------------- [ Group Tab ] ---------------- --}}
+            <div class="@if($route == 'group') show @endif messenger-tab app-scroll" data-view="groups">
                 {{-- items --}}
-                <p style="text-align: center;color:grey;">Soon will be available</p>
-             </div>
+                <table class="messenger-list-item-group m-li-divider create-group">
+                    <tr data-action="0">
+                        <td>
+                        <div class="avatar av-m" style="background-color: #d9efff; text-align: center;">
+                            <span class="fa fa-users" style="font-size: 22px; color: #68a5ff; margin-top: calc(50% - 10px);"></span>
+                        </div>
+                        </td>
+                        <td>
+                            <p data-id="user_1">Create a new group</p>
+                            <span>Make a conversation with a group of people</span>
+                        </td>
+                    </tr>
+                </table>
+
+                <div class="listOfContacts" style="width: 100%;height: calc(100% - 200px);"></div>
+            </div>
 
              {{-- ---------------- [ Search Tab ] ---------------- --}}
            <div class="messenger-tab app-scroll" data-view="search">
@@ -72,7 +86,9 @@
                 {{-- header buttons --}}
                 <nav class="m-header-right">
                     <a href="#" class="add-to-favorite"><i class="fas fa-star"></i></a>
-                    <a href="{{ route('home') }}"><i class="fas fa-home"></i></a>
+                    <a href="#" class="group-settings" style="display:none;"><i class="fas fa-cogs"></i></a>
+                    <a href="#" class="add-members" style="display:none;"><i class="fas fa-user-plus"></i></a>
+                    <a href="{{ route('chatify.chatify') }}"><i class="fas fa-home"></i></a>
                     <a href="#" class="show-infoSide"><i class="fas fa-info-circle"></i></a>
                 </nav>
             </nav>
@@ -85,7 +101,7 @@
         </div>
         {{-- Messaging area --}}
         <div class="m-body app-scroll">
-            <div class="messages">
+            <div class="messages" style="margin-bottom:10px;">
                 <p class="message-hint" style="margin-top: calc(30% - 126.2px);"><span>Please select a chat to start messaging</span></p>
             </div>
             {{-- Typing indicator --}}
