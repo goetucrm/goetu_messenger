@@ -1964,7 +1964,28 @@ $(document).ready(function () {
             });
         
         });
+    
+    $('#showContacts').click(function() {
+      $.ajax({
+        url: url + '/getDeptContact',
+        method: 'GET',
 
+        success: (data) => {
+            console.log(data);
+        },
+        error: () => {
+            console.error('Server error, check your response');
+        }
+      })
+
+      $('#chatHistory').addClass('d-none');
+      $('#contacts').removeClass('d-none');
+
+    })
+    $('#closeContacts').click(function() {
+      $('#contacts').addClass('d-none');
+      $('#chatHistory').removeClass('d-none');
+    })
 });
 
 </script>
