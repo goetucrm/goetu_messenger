@@ -1,16 +1,31 @@
 @include('Chatify::layouts.headLinks')
 <div class="messenger">
     {{-- ----------------------Users/Groups lists side---------------------- --}}
-    <div class="messenger-listView">
+    <div class="messenger-listView" id="chatHistory">
         {{-- Header and search bar --}}
         <div class="m-header">
             <nav>
-                <a href="#"><i class="fas fa-inbox"></i> <span class="messenger-headTitle">GoETU MESSENGER</span> </a>
-                {{-- header buttons --}}
-                <nav class="m-header-right">
-                    <a href="#"><i class="fas fa-cog settings-btn"></i></a>
-                    <a href="#" class="listView-x"><i class="fas fa-times"></i></a>
-                </nav>
+                <div>
+                    <div class="btn-group dropright">
+                        <button type="button" class="btn p-0" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <div class="avatar av-m" 
+                            style="background-image: url('{{ asset(Auth::user()->image) }}');">
+                            </div>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a href="#" class="dropdown-item">Settings</a>
+                            <a href="#" class="dropdown-item" id="showContacts">Show Contacts</a>
+                            <hr class="my-2">
+                            <a href="#" class="dropdown-item">Logout</a>
+                        </div>
+                    </div>
+                    <span class="messenger-headTitle">GoETU MESSENGER</span> 
+                    {{-- header buttons --}}
+                    <nav class="m-header-right my-2">
+                        <a href="#"><i class="fas fa-cog settings-btn"></i></a>
+                        <a href="#" class="listView-x"><i class="fas fa-times"></i></a>
+                    </nav>
+                </div>
             </nav>
             {{-- Search input --}}
             <input type="text" class="messenger-search from-control" placeholder="Search" />
@@ -68,6 +83,35 @@
                     <p class="message-hint"><span>Type to search..</span></p>
                 </div>
              </div>
+        </div>
+    </div>
+
+    <div class="messenger-listView d-none" id="contacts">
+        <div class="m-header">
+            <nav>
+                <a href="#" class="btn" id="closeContacts"><i class="fas fa-arrow-left"></i></a>
+                <span>Contacts</span>
+            </nav>
+        </div>
+        <div class="mt-5 ml-4">
+            <div class="messenger-tab app-scroll" data-view="users">
+                <span style="font-family: 'Arial'; font-weight: 700; color:rgb(0, 0, 0, .3); font-size: .8rem !important;">Active Contacts (1)</span>
+                <hr class="my-2">
+                <table class="messenger-list-item">
+                    <tr>
+                        <td style="position: relative;">
+                            <div class="avatar av-m" style="background-image: url('{{ asset('/storage/user_profile/bug_enhancement_report_schema_1606196478.PNG') }}');">
+                                <span class="activeStatus"></span>
+                            </div>
+                        </td>
+                        <td>
+                            <p data-id="">
+                                {{ strlen('John Ree Vergara') > 20 ? trim(substr('John Ree Vergara',0,20)).'..' : 'John Ree Vergara' }}
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 

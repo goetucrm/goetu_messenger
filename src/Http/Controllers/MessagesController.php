@@ -1107,5 +1107,7 @@ class MessagesController extends Controller
 
     }
 
-
+    public function contactDept() {
+        return 'test';
+    }
 }
