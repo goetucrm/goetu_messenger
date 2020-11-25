@@ -469,7 +469,7 @@ function sendMessage() {
 function fetchMessages(id, type) {
     if (messenger != 0) {
         $.ajax({
-            url: url + '/fetchMessages',
+            url: '/messenger/fetchMessages',
             method: 'POST',
             data: { '_token': access_token, 'id': id, 'type': type },
             dataType: 'JSON',
@@ -653,7 +653,7 @@ function makeSeen(status) {
     $('.messenger-list-item[data-contact=' + messenger.split('_')[1] + '-' + messenger.split('_')[1] + ']').find('tr>td>b').remove();
     // seen
     $.ajax({
-        url: url + '/makeSeen',
+        url: '/messenger/makeSeen',
         method: 'POST',
         data: { '_token': access_token, 'id': messenger.split('_')[1], 'type': messenger.split('_')[0]},
         dataType: 'JSON',
@@ -735,7 +735,7 @@ function checkInternet(state, selector) {
 function getContacts() {
     $('.listOfContacts').html(listItemLoading(4));
     $.ajax({
-        url: url + '/getContacts',
+        url: '/messenger/getContacts',
         method: 'POST',
         data: { '_token': access_token, 'messenger_id': messenger.split('_')[1], 'type': searchingMode  },
         dataType: 'JSON',
@@ -1453,7 +1453,7 @@ $(document).ready(function () {
                                 cssMediaQueries();
                                 if (messenger != 0) {
                                     $.ajax({
-                                        url: url + '/fetchMessages',
+                                        url: '/messenger/fetchMessages',
                                         method: 'POST',
                                         data: { '_token': access_token, 'id': messenger.split('_')[1], 'type': 'group' },
                                         dataType: 'JSON',
@@ -1498,7 +1498,7 @@ $(document).ready(function () {
             if(loading == 0){
               
                 $.ajax({
-                                        url: url + '/fetchMessages',
+                                        url: '/messenger/fetchMessages',
                                         method: 'POST',
                                         data: { '_token': access_token, 'id': messenger.split('_')[1], 'type': 'group', 'last_date': last_date },
                                         dataType: 'JSON',
@@ -1612,7 +1612,7 @@ $(document).ready(function () {
                                 cssMediaQueries();
                                 if (messenger != 0) {
                                     $.ajax({
-                                        url: url + '/fetchMessages',
+                                        url: '/messenger/fetchMessages',
                                         method: 'POST',
                                         data: { '_token': access_token, 'id': messenger.split('_')[1], 'type': 'group' },
                                         dataType: 'JSON',
@@ -1875,7 +1875,7 @@ $(document).ready(function () {
                             });
                             if (messenger != 0) {
                                     $.ajax({
-                                        url: url + '/fetchMessages',
+                                        url: '/messenger/fetchMessages',
                                         method: 'POST',
                                         data: { '_token': access_token, 'id': messenger.split('_')[1], 'type': 'group' },
                                         dataType: 'JSON',
