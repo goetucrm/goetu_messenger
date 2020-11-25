@@ -1985,6 +1985,7 @@ $(document).ready(function () {
 
     })
     $('#closeContacts').click(function() {
+      getContacts();
       $('#contacts').addClass('d-none');
       $('#chatHistory').removeClass('d-none');
     })
