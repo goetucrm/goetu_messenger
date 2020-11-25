@@ -70,4 +70,4 @@
     .m-list-active .activeStatus{
         border-color: {{ $messengerColor }} !important;
     }
-</style>
+    </style>

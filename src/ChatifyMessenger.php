@@ -409,14 +409,13 @@ class ChatifyMessenger
         // Get Unseen messages counter
         $unseenCounter = self::countUnseenMessages($user->id, $type);
         
-        if($type == 'user'){
+        if($type == 'user' || $type == 'department_message'){
             //dd($lastMessage->from_id);
             $getTheUserInfo = DB::table('users')
             ->select('*')
             ->where('id', $user->id)
             ->get()
             ->first();
-
             return view('Chatify::layouts.listItem', [
                 'get' => $type,
                 'user' => $user,

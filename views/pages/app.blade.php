@@ -13,13 +13,13 @@
                             </div>
                         </button>
                         <div class="dropdown-menu">
-                            <a href="#" class="dropdown-item">Settings</a>
-                            <a href="#" class="dropdown-item" id="showContacts">Show Contacts</a>
+                            <a href="#" class="dropdown-item settings-btn" style="color: #6c7283;">Settings</a>
+                            <a href="#" class="dropdown-item" id="showContacts" style="color: #6c7283;">Show Contacts</a>
                             <hr class="my-2">
-                            <a href="#" class="dropdown-item">Logout</a>
+                            <a href="/logout" class="dropdown-item" style="color: #6c7283;">Logout</a>
                         </div>
                     </div>
-                    <span class="messenger-headTitle">GoETU MESSENGER</span> 
+                    <span class="messenger-headTitle">{{Auth::user()->first_name.' '.Auth::user()->last_name}}</span> 
                     {{-- header buttons --}}
                     <nav class="m-header-right my-2">
                         <a href="#"><i class="fas fa-cog settings-btn"></i></a>
@@ -94,23 +94,10 @@
             </nav>
         </div>
         <div class="mt-5 ml-4">
-            <div class="messenger-tab app-scroll" data-view="users">
-                <span style="font-family: 'Arial'; font-weight: 700; color:rgb(0, 0, 0, .3); font-size: .8rem !important;">Active Contacts (1)</span>
+            <div class="messenger-tab" data-view="users">
+                <span style="font-family: 'Arial'; font-weight: 700; color:rgb(0, 0, 0, .3); font-size: .8rem !important;">Active Contacts (<span id="onlineCount"></span>)</span>
                 <hr class="my-2">
-                <table class="messenger-list-item">
-                    <tr>
-                        <td style="position: relative;">
-                            <div class="avatar av-m" style="background-image: url('{{ asset('/storage/user_profile/bug_enhancement_report_schema_1606196478.PNG') }}');">
-                                <span class="activeStatus"></span>
-                            </div>
-                        </td>
-                        <td>
-                            <p data-id="">
-                                {{ strlen('John Ree Vergara') > 20 ? trim(substr('John Ree Vergara',0,20)).'..' : 'John Ree Vergara' }}
-                            </p>
-                        </td>
-                    </tr>
-                </table>
+                <div id="listOfDeptContacts"><div class="text-center">Loadig contacts...</div></div>
             </div>
         </div>
     </div>
