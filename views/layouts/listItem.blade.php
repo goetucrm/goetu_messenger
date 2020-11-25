@@ -81,11 +81,28 @@
         {{-- center side --}}
         <td>
         <p data-id="{{ $type.'_'.$user->id }}">
-            {{ strlen($user->name) > 12 ? trim(substr($user->name,0,12)).'..' : $user->name }} 
+            {{ strlen($user->first_name.' '.$user->last_name) > 20 ? trim(substr($user->first_name.' '.$user->last_name,0,20)).'..' : $user->first_name.' '.$user->last_name }} 
         </td>
         
     </tr>
 </table>
+@endif
+
+@if ($get == 'department_message')
+    <table class="messenger-list-item" data-contact="{{$user->id}}">
+        <tr data-action="0">
+            <td style="position: relative">
+                @if($user->is_online)
+                    <span class="activeStatus"></span>
+                @else
+                    <span class="inactiveStatus"></span>
+                @endif
+                <div class="avatar av-m" 
+                    style="background-image: url('{{ asset('/storage/'.config('chatify.user_avatar.folder').'/'.$user->avatar) }}');">
+                </div>
+            </td>
+        </tr>
+    </table>
 @endif
 
 {{-- -------------------- Shared photos Item -------------------- --}}

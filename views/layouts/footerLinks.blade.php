@@ -1014,7 +1014,6 @@ function setActiveStatus(status, user_id) {
  */
 $(document).ready(function () {
     searchingMode = "users";
-
     console.log(searchingMode);
     // Header avatar
     $('.header-avatar').css('background-image', 'url("/images/user_img/goetu-profile.png")');
@@ -1512,7 +1511,7 @@ $(document).ready(function () {
                                             if (messenger != 0) {
                                                 disableOnLoad(false);
                                             }
-                                            messagesContainer.find('.messages').prepend(data.messages);
+                                            messagesContainer.find('.messages').html(data.messages);
                                         },
                                         error: () => {
                                             // remove loading bar
@@ -1964,20 +1963,21 @@ $(document).ready(function () {
             });
         
         });
-    
     $('#showContacts').click(function() {
       $.ajax({
-        url: url + '/getDeptContact',
+        url: '/messenger/getDeptContact',
         method: 'GET',
 
         success: (data) => {
             console.log(data);
+            $('#listOfDeptContacts').empty().html(data.contacts);
+            $('#onlineCount').empty().html(data.onlineCount)
         },
         error: () => {
             console.error('Server error, check your response');
         }
       })
-
+      
       $('#chatHistory').addClass('d-none');
       $('#contacts').removeClass('d-none');
 
