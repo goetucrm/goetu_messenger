@@ -60,6 +60,7 @@ class ChatifyMessenger
         ];
     }
 
+    
     /**
      * Pusher connection
      */
