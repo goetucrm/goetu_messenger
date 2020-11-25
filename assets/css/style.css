@@ -53,7 +53,7 @@ body{
 	background: transparent;
   width: 45%;
   min-width: 200px;
-  overflow: auto;
+  /* overflow: auto; */
 }
 .messenger-listView .m-header{
     position: absolute;

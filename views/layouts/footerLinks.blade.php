@@ -340,8 +340,9 @@ function IDinfo(id, type) {
                 // focus on messaging input
                 messageInput.focus();
                 // update info in view
-                $('.messenger-infoView .info-name').html(data.user_name);
-                $('.m-header-messaging .user-name').html(data.user_name);
+                console.log(data);
+                $('.messenger-infoView .info-name').html(data.fetch['first_name'] + " " + data.fetch['last_name']);
+                $('.m-header-messaging .user-name').html(data.fetch['first_name'] + " " + data.fetch['last_name']);
                 $('.chat-layers').show();
                 if(searchingMode != 'users'){
                     // Star status
@@ -839,7 +840,7 @@ function getFavoritesList() {
  */
 function getSharedPhotos(user_id, type) {
     $.ajax({
-        url: url + '/shared',
+        url: '/messenger/shared',
         method: 'POST',
         data: { '_token': access_token, 'user_id': user_id, 'type': type },
         dataType: 'JSON',
