@@ -97,7 +97,7 @@
             <div class="messenger-tab" data-view="users">
                 <span style="font-family: 'Arial'; font-weight: 700; color:rgb(0, 0, 0, .3); font-size: .8rem !important;">Active Contacts (<span id="onlineCount"></span>)</span>
                 <hr class="my-2">
-                <div id="listOfDeptContacts"><div class="text-center">Loadig contacts...</div></div>
+                <div id="listOfDeptContacts"><div class="text-center">Loading contacts...</div></div>
             </div>
         </div>
     </div>
