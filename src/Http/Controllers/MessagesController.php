@@ -55,13 +55,12 @@ class MessagesController extends Controller
         $route = (in_array(\Request::route()->getName(), ['user', config('chatify.path')]))
             ? 'user'
             : \Request::route()->getName();
-        dd($route);
-        // return view('Chatify::pages.app', [
-        //     'id' => ($id == null) ? 0 : $route . '_' . $id,
-        //     'route' => $route,
-        //     'messengerColor' => Auth::user()->messenger_color,
-        //     'dark_mode' => Auth::user()->dark_mode < 1 ? 'light' : 'dark',
-        // ]);
+        return view('Chatify::pages.app', [
+            'id' => ($id == null) ? 0 : $route . '_' . $id,
+            'route' => $route,
+            'messengerColor' => Auth::user()->messenger_color,
+            'dark_mode' => Auth::user()->dark_mode < 1 ? 'light' : 'dark',
+        ]);
     }
 
 
@@ -250,14 +249,13 @@ class MessagesController extends Controller
 
         if(!isset($request['last_date']) || $request['last_date'] == null){
             $query = Chatify::fetchMessagesQuery($request['id'], $request['type'])->where('created_at', '<', Carbon::now())->orderBy('created_at', 'desc')->limit(20);       
-            $lastDate = $query->get()->reverse()->first()->created_at;
         }else{
             $query = Chatify::fetchMessagesQuery($request['id'], $request['type'])->where('created_at', '<', $request['last_date'])->orderBy('created_at', 'desc')->limit(20);       
-            $lastDate = $query->get()->reverse()->first()->created_at;
         }
      
         $messages = $query->get()->reverse();
         if ($query->count() > 0) {
+            $lastDate = $query->get()->reverse()->first()->created_at;
             foreach ($messages as $message) {
                     $newID = $request['type'].'-'.$message->id;
                     $allMessages .= Chatify::messageCard(
