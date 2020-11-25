@@ -1076,6 +1076,7 @@ $(document).ready(function () {
             searchingMode = "users";
             getContacts()
             console.log(searchingMode);
+            
         }else{
             searchingMode = "groups";
             getContacts()
