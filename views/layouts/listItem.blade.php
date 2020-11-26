@@ -23,8 +23,10 @@
     <tr data-action="0">
         {{-- Avatar side --}}
         <td style="position: relative">
-            @if($user->active_status)
+            @if($user->is_online)
                 <span class="activeStatus"></span>
+            @else
+                <span class="inactiveStatus"></span>
             @endif
         <div class="avatar av-m" 
         style="background-image: url('{{ $user->image }}');">
@@ -53,6 +55,11 @@
             <span class="fas fa-file"></span> Attachment
             @endif
         </span>
+        @if($user->is_online)
+            <span class="float-right" style="color: rgb(15, 164, 20);">Active</span>
+        @else
+            <span class="float-right">Offline</span>
+        @endif
         {{-- New messages counter --}}
             {!! $unseenCounter > 0 ? "<b>".$unseenCounter."</b>" : '' !!}
         </td>
