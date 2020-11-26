@@ -350,6 +350,7 @@ class MessagesController extends Controller
                         ->get()
                         ->first();
                         //$userCollection = User::where('id', $user->id)->first();
+                        // dd(Chatify::getContactItem($request['messenger_id'], $userCollection, $Type));
                         $contacts .= Chatify::getContactItem($request['messenger_id'], $userCollection, $Type);
                         //dd($contacts);
                     }
