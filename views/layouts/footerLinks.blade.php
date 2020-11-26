@@ -327,7 +327,7 @@ function IDinfo(id, type) {
 
         console.log('type:'+type);
         $.ajax({
-            url: url + '/idInfo',
+            url : '/messenger/idInfo',
             method: 'POST',
             data: { '_token': access_token, 'id': id, 'type': type },
             dataType: 'JSON',
@@ -762,7 +762,7 @@ function updateContatctItem(user_id) {
     if (user_id != auth_id) {
         let listItem = $('body').find('.listOfContacts').find('.messenger-list-item[data-contact='+messenger.split('_')[0]+'-'+ user_id + ']');
         $.ajax({
-            url: url + '/updateContacts',
+            url : '/messenger/updateContacts',
             method: 'POST',
             data: { '_token': access_token, 'user_id': user_id, 'messenger_id': messenger.split('_')[1], 'type': messenger.split('_')[0] },
             dataType: 'JSON',
@@ -792,7 +792,7 @@ function star(user_id) {
     console.log(messenger);
     if (messenger.split('_')[1] != auth_id) {
         $.ajax({
-            url: url + '/star',
+            url : '/messenger/star',
             method: 'POST',
             data: { '_token': access_token, 'user_id': user_id },
             dataType: 'JSON',
@@ -817,7 +817,7 @@ function star(user_id) {
 function getFavoritesList() {
     $('.messenger-favorites').html(avatarLoading(4));
     $.ajax({
-        url: url + '/favorites',
+        url : '/messenger/favorites',
         method: 'POST',
         data: { '_token': access_token },
         dataType: 'JSON',
@@ -860,7 +860,7 @@ function getSharedPhotos(user_id, type) {
  */
 function messengerSearch(searchingMode, input) {
     $.ajax({
-        url: url + '/search',
+        url : '/messenger/search',
         method: 'POST',
         data: { '_token': access_token, 'input': input, 'searchingMode': searchingMode },
         dataType: 'JSON',
@@ -888,7 +888,7 @@ function messengerSearch(searchingMode, input) {
  */
 function deleteConversation(id) {
     $.ajax({
-        url: url + '/deleteConversation',
+        url : '/messenger/deleteConversation',
         method: 'POST',
         data: { '_token': access_token, 'id': id, 'type': messenger.split('_')[0] },
         dataType: 'JSON',
@@ -938,7 +938,7 @@ function updateSettings() {
         formData.append('dark_mode', dark_mode);
     }
     $.ajax({
-        url: url + '/updateSettings',
+        url : '/messenger/updateSettings',
         method: 'POST',
         data: formData,
         dataType: 'JSON',
@@ -993,7 +993,7 @@ function updateSettings() {
  */
 function setActiveStatus(status, user_id) {
     $.ajax({
-        url: url + '/setActiveStatus',
+        url : '/messenger/setActiveStatus',
         method: 'POST',
         data: { '_token': access_token, 'user_id': user_id, 'status': status },
         dataType: 'JSON',
@@ -1378,7 +1378,7 @@ $(document).ready(function () {
         minimumResultsForSearch: 10,
         width:'100%',
         ajax: {
-        url: url + '/selectUsers',
+        url : '/messenger/selectUsers',
         dataType: "json",
         type: 'POST',
         searching:function(){
@@ -1408,7 +1408,7 @@ $(document).ready(function () {
     $('.btn-save-members').on('click', function(){
     
         $.ajax({
-            url: url + '/updateGroupChatMembers',
+            url : '/messenger/updateGroupChatMembers',
             method: 'POST',
             data:{
                 'added_members': $('#txtSelectMembers').val(), '_token': access_token, 'group':messenger.split('_')[1] 
@@ -1443,7 +1443,7 @@ $(document).ready(function () {
                     if (messenger.split('_')[1] != auth_id) {
                         let listItem = $('body').find('.listOfContacts').find('.messenger-list-item[data-contact='+messenger.split('_')[0]+'-'+ messenger.split('_')[1] + ']');
                         $.ajax({
-                            url: url + '/updateContacts',
+                            url : '/messenger/updateContacts',
                             method: 'POST',
                             data: { '_token': access_token, 'user_id': messenger.split('_')[1], 'messenger_id': messenger.split('_')[1], 'type': 'group'},
                             dataType: 'JSON',
@@ -1602,7 +1602,7 @@ $(document).ready(function () {
                         if (messenger.split('_')[1] != auth_id) {
                         let listItem = $('body').find('.listOfContacts').find('.messenger-list-item[data-contact='+messenger.split('_')[0]+'-'+ messenger.split('_')[1] + ']');
                         $.ajax({
-                            url: url + '/updateContacts',
+                            url : '/messenger/updateContacts',
                             method: 'POST',
                             data: { '_token': access_token, 'user_id': messenger.split('_')[1], 'messenger_id': messenger.split('_')[1], 'type': 'group'},
                             dataType: 'JSON',
@@ -1713,7 +1713,7 @@ $(document).ready(function () {
                     if (response.id != auth_id) {
                         let listItem = $('body').find('.listOfContacts').find('.messenger-list-item[data-contact="group-'+response.id+'"]');
                         $.ajax({
-                            url: url + '/updateContacts',
+                            url : '/messenger/updateContacts',
                             method: 'POST',
                             data: { '_token': access_token, 'user_id': response.id, 'messenger_id': response.id, 'type': 'group'},
                             dataType: 'JSON',
@@ -1860,7 +1860,7 @@ $(document).ready(function () {
                         if (response.id != auth_id) {
                             let listItem = $('body').find('.listOfContacts').find('.messenger-list-item[data-contact="group-'+response.id+'"]');
                             $.ajax({
-                                url: url + '/updateContacts',
+                                url : '/messenger/updateContacts',
                                 method: 'POST',
                                 data: { '_token': access_token, 'user_id': response.id, 'messenger_id': response.id, 'type': 'group'},
                                 dataType: 'JSON',

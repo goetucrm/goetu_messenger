@@ -113,7 +113,7 @@ class ChatifyMessenger
         $explodedParam = explode('-', $param);
         $id = $explodedParam[1];
         $type = $explodedParam[0];
-
+        
         $attachment = $attachment_type = $attachment_title = null;
 
         $msg = DB::table('messages')
@@ -121,7 +121,7 @@ class ChatifyMessenger
         ->where('id', $id)
         ->whereIn('type', [$type])
         ->first();
-
+        
         $msgCount = DB::table('messages')
         ->select('*')
         ->where('id', $id)
