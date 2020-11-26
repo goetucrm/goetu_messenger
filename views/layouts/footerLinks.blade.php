@@ -341,8 +341,8 @@ function IDinfo(id, type) {
                 messageInput.focus();
                 // update info in view
                 console.log(data);
-                $('.messenger-infoView .info-name').html(data.fetch['first_name'] + " " + data.fetch['last_name']);
-                $('.m-header-messaging .user-name').html(data.fetch['first_name'] + " " + data.fetch['last_name']);
+                $('.messenger-infoView .info-name').html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
+                $('.m-header-messaging .user-name').html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
                 $('.chat-layers').show();
                 if(searchingMode != 'users'){
                     // Star status

@@ -439,7 +439,7 @@ class ChatifyMessenger
 
             $getNewMemberInfo = DB::table('users')
             ->select('*')
-            ->where('id', $explodedMessage[0])
+            ->where('id', $user->id)
             ->get()
             ->first();
 
@@ -459,15 +459,13 @@ class ChatifyMessenger
             $getTheLeaverInfoCount = DB::table('users')
             ->select('*')
             ->where('id', $lastID)
-            ->count();
-
-
+            ->count();;
             return view('Chatify::layouts.listItem', [
                 'get' => $type,
                 'user' => $getTheUserInfo,
-                'from_user_name' => $getTheLeaverInfoCount != 0 ? $getTheLeaverInfo->first_name.' '.$getTheLeaverInfo->last_name : null,
+                // 'from_user_name' => $getTheLeaverInfoCount != 0 ? $getTheLeaverInfo->first_name.' '.$getTheLeaverInfo->last_name : null,
                 'avatar' => $getTheUserInfo->avatar,
-                'member_name' => $getNewMemberInfoCount != 0 ? $getNewMemberInfo->first_name.' '.$getNewMemberInfo->last_name : null,
+                // 'member_name' => $getNewMemberInfoCount != 0 ? $getNewMemberInfo->first_name.' '.$getNewMemberInfo->last_name : null,
                 'user_id' => $explodedMessage[0],
                 'from_name' => $getTheUserInfo->group_chat_name,
                 'lastMessage' => $lastMessage,
