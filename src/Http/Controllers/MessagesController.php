@@ -55,12 +55,13 @@ class MessagesController extends Controller
         $route = (in_array(\Request::route()->getName(), ['user', config('chatify.path')]))
             ? 'user'
             : \Request::route()->getName();
-        return view('Chatify::pages.app', [
-            'id' => ($id == null) ? 0 : $route . '_' . $id,
-            'route' => $route,
-            'messengerColor' => Auth::user()->messenger_color,
-            'dark_mode' => Auth::user()->dark_mode < 1 ? 'light' : 'dark',
-        ]);
+        dd($route);
+        // return view('Chatify::pages.app', [
+        //     'id' => ($id == null) ? 0 : $route . '_' . $id,
+        //     'route' => $route,
+        //     'messengerColor' => Auth::user()->messenger_color,
+        //     'dark_mode' => Auth::user()->dark_mode < 1 ? 'light' : 'dark',
+        // ]);
     }
 
 
@@ -93,7 +94,6 @@ class MessagesController extends Controller
         // User data
         if ($request['type'] == 'user') {
             $fetch = User::where('id', $request['id'])->first();
-            
             // send the response
             return Response::json([
                 'favorite' => $favorite,
@@ -252,7 +252,6 @@ class MessagesController extends Controller
         }else{
             $query = Chatify::fetchMessagesQuery($request['id'], $request['type'])->where('created_at', '<', $request['last_date'])->orderBy('created_at', 'desc')->limit(20);       
         }
-     
         $messages = $query->get()->reverse();
         if ($query->count() > 0) {
             $lastDate = $query->get()->reverse()->first()->created_at;
@@ -298,7 +297,6 @@ class MessagesController extends Controller
      * @return JSON response
      */
     public function getContacts(Request $request){
-        
         $Type = $request['type'];
 
         if($Type == 'users'){
@@ -1107,18 +1105,40 @@ class MessagesController extends Controller
     }
 
     public function contactDept() {
+        $userTypes = UserTypeReference::where('user_id', Auth::id())->get();
+        $listOfContactsPerDept = [];
+        foreach ($userTypes as $userTypeKey => $userTypeVal) {
+            $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
+                ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)
+                ->orderBy('is_online','DESC')
+                ->get();
+        }
         $departmentContact = User::where('user_type_id', Auth::user()->user_type_id)->orderBy('is_online','DESC')->get();
         $list = '';
         $onlineCount = 0;
-        foreach ($departmentContact as $key => $value) {
-            if($value->id != Auth::id()) {
-                $list .= view('Chatify::layouts.listOfContacts', compact('value'))->render();
-                $onlineCount += $value->is_online == '1' ? 1 : 0;
+        $idList = [];
+        foreach ($listOfContactsPerDept as $contactVal) {
+            foreach($contactVal as $value) {
+                if($value->user_id != Auth::id() && !in_array($value->user_id, $idList)) {
+                    $idList[] = $value->user_id;
+                    $list .= view('Chatify::layouts.listOfContacts', compact('value'))->render();
+                    $onlineCount += $value->is_online == '1' ? 1 : 0;
+                }
             }
         }
-        return Response::json([
-            'contacts' => $departmentContact->count() > 0 ? $list : '<br><p class="message-hint"><span>Your contact list is empty</span></p>',
+        return response()->json([
+            'contacts' => count($listOfContactsPerDept) > 0 ? $list : '<br><p class="message-hint"><span>Your contact list is empty</span></p>',
             'onlineCount' => $onlineCount
-        ], 200);
+        ]);
+        // foreach ($departmentContact as $key => $value) {
+        //     if($value->id != Auth::id()) {
+        //         $list .= view('Chatify::layouts.listOfContacts', compact('value'))->render();
+        //         $onlineCount += $value->is_online == '1' ? 1 : 0;
+        //     }
+        // }
+        // return Response::json([
+        //     'contacts' => $departmentContact->count() > 0 ? $list : '<br><p class="message-hint"><span>Your contact list is empty</span></p>',
+        //     'onlineCount' => $onlineCount
+        // ], 200);
     }
 }
