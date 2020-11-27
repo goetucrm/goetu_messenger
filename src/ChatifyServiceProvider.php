@@ -54,7 +54,7 @@ class ChatifyServiceProvider extends ServiceProvider
 
         // Controllers
         $this->publishes([
-            __DIR__ . '/../src/Http/Controllers' => app_path('Http/Controllers/vendor/Chatify')
+            __DIR__ . '/../src/Http/Controllers' => app_path('Http/Controllers/Chatify')
         ], 'chatify-controllers');
 
         // Views
