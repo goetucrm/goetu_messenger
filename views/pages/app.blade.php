@@ -41,7 +41,7 @@
         <div class="m-body">
            {{-- Lists [Users/Group] --}}
            {{-- ---------------- [ User Tab ] ---------------- --}}
-           <div class="@if($route == 'user') show @endif messenger-tab app-scroll" data-view="users">
+           <div class="@if($route == 'user') show @endif messenger-tab" data-view="users">
 
                {{-- Favorites --}}
                <p class="messenger-title">Favorites</p>
@@ -56,7 +56,7 @@
            </div>
 
             {{-- ---------------- [ Group Tab ] ---------------- --}}
-            <div class="@if($route == 'group') show @endif messenger-tab app-scroll" data-view="groups">
+            <div class="@if($route == 'group') show @endif messenger-tab" data-view="groups">
                 {{-- items --}}
                 <table class="messenger-list-item-group m-li-divider create-group">
                     <tr data-action="0">
@@ -76,7 +76,7 @@
             </div>
 
              {{-- ---------------- [ Search Tab ] ---------------- --}}
-           <div class="messenger-tab app-scroll" data-view="search">
+           <div class="messenger-tab" data-view="search">
                 {{-- items --}}
                 <p class="messenger-title">Search</p>
                 <div class="search-records">
@@ -94,7 +94,7 @@
             </nav>
         </div>
         <div class="mt-5 ml-4">
-            <div class="messenger-tab" data-view="users">
+            <div class="messenger-tab" data-view="contacts">
                 <span style="font-family: 'Arial'; font-weight: 700; color:rgb(0, 0, 0, .3); font-size: .8rem !important;">Active Contacts (<span id="onlineCount"></span>)</span>
                 <hr class="my-2">
                 <div id="listOfDeptContacts"><div class="text-center">Loading contacts...</div></div>

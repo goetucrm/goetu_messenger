@@ -40,7 +40,9 @@ var messenger,
     defaultAvatarInSettings = null,
     messengerColor,
     searchingMode,
-    dark_mode;
+    previous_last_date = null,
+    dark_mode,
+    scroll_counter = 0;
 const messagesContainer = $('.messenger-messagingView .m-body'),
     messengerTitleDefault = $('.messenger-headTitle').text(),
     messageInput = $('#message-form .m-send');
@@ -191,10 +193,10 @@ let app_modal = function ({
 }) {
     const modal = $('.app-modal[data-name=' + name + ']');
     // header
-    header ? modal.find('.app-modal-header').html(header) : '';
+    header ? modal.find('.app-modal-header').empty().html(header) : '';
 
     // body
-    body ? modal.find('.app-modal-body').html(body) : '';
+    body ? modal.find('.app-modal-body').empty().html(body) : '';
 
     // buttons
     buttons == true
@@ -341,8 +343,8 @@ function IDinfo(id, type) {
                 messageInput.focus();
                 // update info in view
                 console.log(data);
-                $('.messenger-infoView .info-name').html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
-                $('.m-header-messaging .user-name').html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
+                $('.messenger-infoView .info-name').empty().html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
+                $('.m-header-messaging .user-name').empty().html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
                 $('.chat-layers').show();
                 if(searchingMode != 'users'){
                     // Star status
@@ -480,13 +482,13 @@ function fetchMessages(id, type) {
                 if (messenger != 0) {
                     disableOnLoad(false);
                 }
-                messagesContainer.find('.messages').html(data.messages);
+                messagesContainer.find('.messages').empty().html(data.messages);
                 // scroll to bottom
                 scrollBottom(messagesContainer);
                 // remove loading bar
                 NProgress.done();
                 NProgress.remove();
-
+                last_date = data.last_date.date;
                 // trigger seen event
                 makeSeen(true);
             },
@@ -734,7 +736,7 @@ function checkInternet(state, selector) {
  *-------------------------------------------------------------
  */
 function getContacts() {
-    $('.listOfContacts').html(listItemLoading(4));
+    $('.listOfContacts').empty().html(listItemLoading(4));
     $.ajax({
         url: '/messenger/getContacts',
         method: 'POST',
@@ -742,8 +744,8 @@ function getContacts() {
         dataType: 'JSON',
         success: (data) => {
             console.log(data);
-            $('.listOfContacts').html('');
-            $('.listOfContacts').html(data.contacts);
+            $('.listOfContacts').empty().html('');
+            $('.listOfContacts').empty().html(data.contacts);
             // update data-action required with [responsive design]
             cssMediaQueries();
         },
@@ -815,15 +817,15 @@ function star(user_id) {
  *-------------------------------------------------------------
  */
 function getFavoritesList() {
-    $('.messenger-favorites').html(avatarLoading(4));
+    $('.messenger-favorites').empty().html(avatarLoading(4));
     $.ajax({
         url : '/messenger/favorites',
         method: 'POST',
         data: { '_token': access_token },
         dataType: 'JSON',
         success: (data) => {
-            $('.messenger-favorites').html('');
-            $('.messenger-favorites').html(data.favorites);
+            $('.messenger-favorites').empty().html('');
+            $('.messenger-favorites').empty().html(data.favorites);
             // update data-action required with [responsive design]
             cssMediaQueries();
         },
@@ -845,7 +847,7 @@ function getSharedPhotos(user_id, type) {
         data: { '_token': access_token, 'user_id': user_id, 'type': type },
         dataType: 'JSON',
         success: (data) => {
-            $('.shared-photos-list').html(data.shared);
+            $('.shared-photos-list').empty().html(data.shared);
         },
         error: () => {
             console.error('Server error, check your response');
@@ -865,13 +867,13 @@ function messengerSearch(searchingMode, input) {
         data: { '_token': access_token, 'input': input, 'searchingMode': searchingMode },
         dataType: 'JSON',
         beforeSend: () => {
-            $('.search-records').html(listItemLoading(4));
+            $('.search-records').empty().html(listItemLoading(4));
         },
         success: (data) => {
             $('.search-records').find('svg').remove();
             data.addData == 'append'
                 ? $('.search-records').append(data.records)
-                : $('.search-records').html(data.records);
+                : $('.search-records').empty().html(data.records);
             // update data-action required with [responsive design]
             cssMediaQueries();
         },
@@ -1089,6 +1091,15 @@ $(document).ready(function () {
     $('body').on('click', '.messenger-list-item', function () {
         $('.messenger-list-item').removeClass('m-list-active');
         $(this).addClass('m-list-active');
+
+        if ($(this).find('tr[data-action]').attr('data-action') == "1") {
+            $('.messenger-listView').hide();
+        }
+        scroll_counter = 0;
+        previous_last_date = null;
+        messenger = $(this).find('p[data-id]').attr('data-id');
+        IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
+        console.log(messenger.split('_')[1]+' + '+messenger.split('_')[0]);
     });
 
     // show info side button
@@ -1111,12 +1122,12 @@ $(document).ready(function () {
 
     // click action for list item [user/group]
     $('body').on('click', '.messenger-list-item', function () {
-        if ($(this).find('tr[data-action]').attr('data-action') == "1") {
-            $('.messenger-listView').hide();
-        }
-        messenger = $(this).find('p[data-id]').attr('data-id');
-        IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
-        console.log(messenger.split('_')[1]+' + '+messenger.split('_')[0]);
+        // if ($(this).find('tr[data-action]').attr('data-action') == "1") {
+        //     $('.messenger-listView').hide();
+        // }
+        // messenger = $(this).find('p[data-id]').attr('data-id');
+        // IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
+        // console.log(messenger.split('_')[1]+' + '+messenger.split('_')[0]);
     });
 
     // click action for favorite button
@@ -1351,12 +1362,12 @@ $(document).ready(function () {
             },
             beforeSend: () => {
                 $('#listOfMember').find('svg').remove();
-                $('#listOfMember').html(listItemLoading(4));
+                $('#listOfMember').empty().html(listItemLoading(4));
             },
             success: (data) => {
                 data.addData == 'append' 
                 ? $('#listOfMember').append(data.records) :
-                $('#listOfMember').html(data.records);
+                $('#listOfMember').empty().html(data.records);
             }
         });
         
@@ -1464,7 +1475,7 @@ $(document).ready(function () {
                                             if (messenger != 0) {
                                                 disableOnLoad(false);
                                             }
-                                            messagesContainer.find('.messages').html(data.messages);
+                                            messagesContainer.find('.messages').empty().html(data.messages);
                                             // scroll to bottom
                                             scrollBottom(messagesContainer);
                                             // remove loading bar
@@ -1497,31 +1508,36 @@ $(document).ready(function () {
         var pos = $('.app-scroll').scrollTop();
         if (pos == 0) {
             if(loading == 0){
-              
-                $.ajax({
-                                        url: '/messenger/fetchMessages',
-                                        method: 'POST',
-                                        data: { '_token': access_token, 'id': messenger.split('_')[1], 'type': 'group', 'last_date': last_date },
-                                        dataType: 'JSON',
-                                        beforeSend: () => {
-                                            loading = 1;
-                                        },
-                                        success: (data) => {
-                                            loading = 0
-                                            last_date = data.last_date.date;
-                                            // Enable message form if messenger not = 0; means if data is valid
-                                            if (messenger != 0) {
-                                                disableOnLoad(false);
-                                            }
-                                            messagesContainer.find('.messages').html(data.messages);
-                                        },
-                                        error: () => {
-                                            // remove loading bar
-                                            NProgress.done();
-                                            NProgress.remove();
-                                            console.error('Failed to fetch messages! check your server response.');
-                                        }
-                                    });
+                console.log(previous_last_date, ' ', last_date)
+                if(previous_last_date !== last_date) {
+                    $.ajax({
+                        url: '/messenger/fetchMessages',
+                        method: 'POST',
+                        data: { '_token': access_token, 'id': messenger.split('_')[1], 'type':  messenger.split('_')[0], 'last_date': last_date },
+                        dataType: 'JSON',
+                        beforeSend: () => {
+                            loading = 1;
+                        },
+                        success: (data) => {
+                            console.log(data);
+                            loading = 0
+                            previous_last_date = last_date;
+                            last_date = data.last_date.date !== undefined ? data.last_date.date : last_date;
+                            // Enable message form if messenger not = 0; means if data is valid
+                            if (messenger != 0) {
+                                disableOnLoad(false);
+                            }
+
+                            messagesContainer.find('.messages').prepend(data.messages);
+                        },
+                        error: () => {
+                            // remove loading bar
+                            NProgress.done();
+                            NProgress.remove();
+                            console.error('Failed to fetch messages! check your server response.');
+                        }
+                    });
+                }
             }                 
         }
 
@@ -1623,7 +1639,7 @@ $(document).ready(function () {
                                             if (messenger != 0) {
                                                 disableOnLoad(false);
                                             }
-                                            messagesContainer.find('.messages').html(data.messages);
+                                            messagesContainer.find('.messages').empty().html(data.messages);
                                             // scroll to bottom
                                             scrollBottom(messagesContainer);
                                             // remove loading bar
@@ -1886,7 +1902,7 @@ $(document).ready(function () {
                                             if (messenger != 0) {
                                                 disableOnLoad(false);
                                             }
-                                            messagesContainer.find('.messages').html(data.messages);
+                                            messagesContainer.find('.messages').empty().html(data.messages);
                                             // scroll to bottom
                                             scrollBottom(messagesContainer);
                                             // remove loading bar
@@ -1971,7 +1987,6 @@ $(document).ready(function () {
         method: 'GET',
 
         success: (data) => {
-            console.log(data);
             $('#listOfDeptContacts').empty().html(data.contacts);
             $('#onlineCount').empty().html(data.onlineCount)
         },
@@ -1982,6 +1997,7 @@ $(document).ready(function () {
       
       $('#chatHistory').addClass('d-none');
       $('#contacts').removeClass('d-none');
+      $('.messenger-tab[data-view=contacts]').show()
 
     })
     $('#closeContacts').click(function() {

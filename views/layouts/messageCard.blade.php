@@ -32,7 +32,7 @@
     <div style="margin-top:15px;">
         <p class="sender-name" style="margin-left:70px; font-size:10px; margin-bottom:0px;"><strong>{{ $from_id_name }}</strong> | <small title="{{ $fullTime }}" style="font-size:8px;"> {{ $time }}</small></p>
         <div class="message-card" data-id="{{ $id }}">
-            <div class="avatar av-m mr-2" style="background-image: url('{{ asset('/storage/user_profile/IMG_20200304_135846-min_1585545428.jpg') }}');"></div>
+            <div class="avatar av-m mr-2" style="background-image: url('{{ file_exists(public_path($image)) ? asset($image) : asset('/storage/users-avatar/avatar.png')  }}');"></div>
             <p>{!! ($message == null && $attachment != null && @$attachment[2] != 'file') ? $attachment[1] : nl2br($message) !!}
                 {{-- If attachment is a file --}}
                 @if(@$attachment[2] == 'file')
@@ -85,7 +85,7 @@
     @if('GC-'.$to_id.'-created-by-'.$from_id.'' != ''.$message.'' && 'GC-'.$to_id.'-leave-by-'.$from_id.'' != ''.$message.'' && $member_id.'-GC-'.$to_id.'-added-by-'.$from_id.'' != ''.$message.'' && $member_id.'-GC-'.$to_id.'-removed-by-'.$from_id.'' != ''.$message.'' && 'GC-'.$to_id.'-update-by-'.$from_id.'' != ''.$message.'')
     <p class="sender-name" style="text-align:end; margin-right:70px; font-size:10px; margin-bottom:0px;"><strong>You </strong> | <small title="{{ $fullTime }}" style="font-size:8px;"> {{ $time }}</small></p>
     <div class="message-card mc-sender" data-id="{{ $id }}">
-        <div class="avatar av-m ml-2" style="background-image: url('{{ asset('/storage/user_profile/IMG_20200304_135846-min_1585545428.jpg') }}');"></div>
+        <div class="avatar av-m ml-2" style="background-image: url('{{ file_exists(public_path($image)) ? asset($image) : asset('/storage/users-avatar/avatar.png')  }}');"></div>
         <p>{!! ($message == null && $attachment != null && @$attachment[2] != 'file') ? $attachment[1] : nl2br($message) !!}
             @if(@$attachment[2] == 'file')
             <a href="{{ route(config('chatify.attachments.route'),['fileName'=>$attachment[0]]) }}" class="file-download">

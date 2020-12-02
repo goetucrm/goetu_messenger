@@ -207,6 +207,7 @@ class ChatifyMessenger
                     'id' => $msg->id,
                     //'first_date' => $firstMessageIndicator->created_at,
                     'from_id_name' => $selectTheUserInfo->first_name.' '.$selectTheUserInfo->last_name,
+                    'image' => $selectTheUserInfo->image,
                     'from_id' => $msg->from_id,
                     'to_id' => $msg->to_id,
                     'message' => $msg->body,
@@ -336,6 +337,13 @@ class ChatifyMessenger
             return Message::where('type', $type)
             ->where('to_id', $user_id);
         }else{
+            return Message::whereIn('type', [$type])->where(function($q) use ($user_id) {
+                $q->where(function($q1) use ($user_id){
+                        $q1->where('from_id',Auth::user()->id)->where('to_id',$user_id);
+                    })->orWhere(function($q1) use ($user_id) {
+                        $q1->where('from_id',$user_id)->where('to_id',Auth::id());
+                    });
+            });
             return Message::whereIn('type', [$type])->where('from_id',Auth::user()->id)->where('to_id',$user_id)
                     ->orWhere('from_id',$user_id)->where('to_id',Auth::user()->id);
         }
