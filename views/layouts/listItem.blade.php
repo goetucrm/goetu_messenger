@@ -29,7 +29,7 @@
                 <span class="inactiveStatus"></span>
             @endif
         <div class="avatar av-m" 
-        style="background-image: url('{{ $user->image }}');">
+        style="background-image: url('{{ file_exists(public_path($user->image)) ? asset($user->image) : asset('/storage/users-avatar/avatar.png')  }}');">
         </div>
         </td>
         {{-- center side --}}
