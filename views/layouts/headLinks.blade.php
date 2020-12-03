@@ -13,6 +13,7 @@
 <script src="{{ asset('js/chatify/autosize.js') }}"></script>
 <script src="{{ asset('js/app.js') }}"></script>
 <script src='https://unpkg.com/nprogress@0.2.0/nprogress.js'></script>
+<link rel="shortcut icon" href="{{asset('images/user_img/favicon.ico')}}" type="image/x-icon">
 <title>GoETU | Messenger</title>
 {{-- styles --}}
 <link rel='stylesheet' href='https://unpkg.com/nprogress@0.2.0/nprogress.css'/>
