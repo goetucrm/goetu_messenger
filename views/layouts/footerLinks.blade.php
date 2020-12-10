@@ -1069,8 +1069,19 @@ $(document).ready(function () {
         // listening for pusher:subscription_succeeded
         channel.bind('pusher:subscription_succeeded', function () {
             // On connection state change [Updating] and get [info & msgs]
-            if(Object.keys(storage).length === 0) {
-                IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
+            IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
+            if(Object.keys(storage).length > 0) {
+                $.each(storage, function(key, value) {
+                    var hasFile = storage[key].get('file').name !== "" ? true : false;
+                    hasFile
+                        ? messagesContainer.find('.messages').append(sendigCard(storage[key].get('message') + '\n' + loadingSVG('28px'), key))
+                        : messagesContainer.find('.messages').append(sendigCard(storage[key].get('message'), key));
+                    
+                    messagesContainer.find('.message-card[data-id=' + key + ']').addClass('mc-error');
+                    messagesContainer.find('.message-card[data-id=' + key + ']').find('svg.loadingSVG').remove();
+                    messagesContainer.find('.message-card[data-id=' + key + '] p').prepend('<span class="fas fa-exclamation-triangle"></span>');
+                    messagesContainer.find('.message-card[data-id=' + key + '] p').css("cursor", "pointer");
+                })
             }
         });
     });
