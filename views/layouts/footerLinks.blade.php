@@ -1021,6 +1021,14 @@ const checkOnlineStatus = async () => {
     }
 }
 
+const resendUnsent = () => {
+    try {
+        
+    } catch (err) {
+
+    }
+}
+
 /**
  *-------------------------------------------------------------
  * On DOM ready
@@ -1067,21 +1075,67 @@ $(document).ready(function () {
         let selector = $('.internet-connection');
         checkInternet(states.current, selector);
         // listening for pusher:subscription_succeeded
-        channel.bind('pusher:subscription_succeeded', function () {
+        channel.bind('pusher:subscription_succeeded', async function () {
             // On connection state change [Updating] and get [info & msgs]
-            IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
             if(Object.keys(storage).length > 0) {
-                $.each(storage, function(key, value) {
-                    var hasFile = storage[key].get('file').name !== "" ? true : false;
-                    hasFile
-                        ? messagesContainer.find('.messages').append(sendigCard(storage[key].get('message') + '\n' + loadingSVG('28px'), key))
-                        : messagesContainer.find('.messages').append(sendigCard(storage[key].get('message'), key));
-                    
-                    messagesContainer.find('.message-card[data-id=' + key + ']').addClass('mc-error');
-                    messagesContainer.find('.message-card[data-id=' + key + ']').find('svg.loadingSVG').remove();
-                    messagesContainer.find('.message-card[data-id=' + key + '] p').prepend('<span class="fas fa-exclamation-triangle"></span>');
-                    messagesContainer.find('.message-card[data-id=' + key + '] p').css("cursor", "pointer");
+                var promises = [];
+                for(const prop in storage) {
+                    var _dataId = prop;
+                    var hasFile = storage[_dataId].get('file').name !== "" ? true : false;
+                    var result = $.ajax({
+                        url: $("#message-form").attr('action'),
+                        method: 'POST',
+                        data: storage[_dataId],
+                        dataType: 'JSON',
+                        processData: false,
+                        contentType: false,
+                        beforeSend: () => {
+                            $(".message-hint").remove();
+                            $('.mc-error[data-id='+_dataId+']').remove();
+                            hasFile
+                                ? messagesContainer.find('.messages').append(sendigCard(storage[_dataId].get('message') + '\n' + loadingSVG('28px'), _dataId))
+                                : messagesContainer.find('.messages').append(sendigCard(storage[_dataId].get('message'), _dataId));
+                            delete storage[_dataId];
+                            
+                            scrollBottom(messagesContainer);
+                            messageInput.css({ 'height': '42px' });
+                            $("#message-form").trigger("reset");
+                            cancelAttachment();
+                            messageInput.focus();
+                        },
+                        success: (data) => {
+                            if (data.error > 0) {
+                                // message card error status
+                                storage[_dataId] = _dataId;
+                                errorMessageCard(_dataId);
+                                console.error(data.error_msg);
+                            } else {
+                                console.log('success');
+                                messagesContainer.find('.mc-sender[data-id="sending"]').remove();
+                                // get message before the sending one [temporary]
+                                messagesContainer.find('.message-card[data-id='+data.temporaryMsgId+']').before(data.message);
+                                // delete the temporary one
+                                messagesContainer.find('.message-card[data-id='+data.temporaryMsgId+']').remove();
+                                // scroll to bottom
+                                scrollBottom(messagesContainer);
+                                // send contact item updates
+                                if(sendContactItemUpdates(true)){
+                                    //setTimeout(function(){
+                                        updateContatctItem(messenger.split('_')[1]);
+                                    //}, 4000);
+                                }
+                            }
+                        }
+                    })
+
+                    promises.push(result);
+                }
+                $.when.apply(null, promises).done(function(){
+                    IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
                 })
+            } else {
+                IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
+                updateContatctItem(messenger.split('_')[1]);
             }
         });
     });
