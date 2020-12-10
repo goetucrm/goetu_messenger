@@ -1141,4 +1141,10 @@ class MessagesController extends Controller
         //     'onlineCount' => $onlineCount
         // ], 200);
     }
+
+    public function testOnline() {
+        return response()->json([
+            "Status" => "Okay"
+        ]);
+    }
 }

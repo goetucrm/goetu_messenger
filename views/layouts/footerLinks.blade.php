@@ -42,7 +42,9 @@ var messenger,
     searchingMode,
     previous_last_date = null,
     dark_mode,
-    scroll_counter = 0;
+    scroll_counter = 0,
+    storage = {},
+    is_online;
 const messagesContainer = $('.messenger-messagingView .m-body'),
     messengerTitleDefault = $('.messenger-headTitle').text(),
     messageInput = $('#message-form .m-send');
@@ -306,6 +308,7 @@ function errorMessageCard(id) {
     messagesContainer.find('.message-card[data-id=' + id + ']').addClass('mc-error');
     messagesContainer.find('.message-card[data-id=' + id + ']').find('svg.loadingSVG').remove();
     messagesContainer.find('.message-card[data-id=' + id + '] p').prepend('<span class="fas fa-exclamation-triangle"></span>');
+    messagesContainer.find('.message-card[data-id=' + id + '] p').css("cursor", "pointer");
 }
 
 /**
@@ -430,11 +433,11 @@ function sendMessage() {
                 messageInput.focus();
             },
             success: (data) => {
-                console.log(data.tempID);
+                
                 if (data.error > 0) {
                     // message card error status
+                    storage[tempID] = tempID;
                     errorMessageCard(tempID);
-                    console.error(data.error_msg);
                 } else {
                     
                     messagesContainer.find('.mc-sender[data-id="sending"]').remove();
@@ -454,6 +457,7 @@ function sendMessage() {
                 }
             },
             error: () => {
+                storage[tempID] = formData
                 // message card error status
                 errorMessageCard(tempID);
                 // error log
@@ -1008,7 +1012,14 @@ function setActiveStatus(status, user_id) {
     });
 }
 
-
+const checkOnlineStatus = async () => {
+    try {
+        const online = await fetch('/messenger/testOnline');
+        return online.status >= 200 && online.status < 300; // Online
+    } catch (err) {
+        return false; // Offline
+    }
+}
 
 /**
  *-------------------------------------------------------------
@@ -1038,16 +1049,97 @@ $(document).ready(function () {
     // make message input autosize.
     autosize($('.m-send'));
 
+    window.addEventListener('beforeunload', (event) => {
+        if(Object.keys(storage).length > 0){
+            event.preventDefault();
+            event.returnValue = '';
+        }
+    })
+
+    setInterval(async () => {
+        const result = await checkOnlineStatus();
+        is_online = result;
+    }, 30000);
+
     // check if pusher has access to the channel [Internet status]
     pusher.connection.bind('state_change', function (states) {
+        console.log("states: ", states)
         let selector = $('.internet-connection');
         checkInternet(states.current, selector);
         // listening for pusher:subscription_succeeded
         channel.bind('pusher:subscription_succeeded', function () {
             // On connection state change [Updating] and get [info & msgs]
-            IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
+            if(Object.keys(storage).length === 0) {
+                IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
+            }
         });
     });
+
+    $(document).on('click', '.message-card', function () {
+        var _dataId = $(this).attr('data-id');
+        var message = $.trim($(this).text());
+        if(/temp_/i.test(_dataId)) {
+            Swal.fire({
+                text: 'Do you want to resend this message?',
+                icon: 'question',
+                showCancelButton: true,
+                cancelButtonText: "No",
+            }).then(async function(returnValue) {
+                if(returnValue.value) {
+                    const result = await checkOnlineStatus();
+                    is_online = result;
+                    var hasFile = storage[_dataId].get('file').name !== "" ? true : false;
+                    if(is_online) {
+                        $.ajax({
+                            url: $("#message-form").attr('action'),
+                            method: 'POST',
+                            data: storage[_dataId],
+                            dataType: 'JSON',
+                            processData: false,
+                            contentType: false,
+                            beforeSend: () => {
+                                $(".message-hint").remove();
+                                $('.mc-error[data-id='+_dataId+']').remove();
+                                hasFile
+                                    ? messagesContainer.find('.messages').append(sendigCard(storage[_dataId].get('message') + '\n' + loadingSVG('28px'), _dataId))
+                                    : messagesContainer.find('.messages').append(sendigCard(storage[_dataId].get('message'), _dataId));
+                                delete storage[_dataId];
+                                
+                                scrollBottom(messagesContainer);
+                                messageInput.css({ 'height': '42px' });
+                                $("#message-form").trigger("reset");
+                                cancelAttachment();
+                                messageInput.focus();
+                            },
+                            success: (data) => {
+                                if (data.error > 0) {
+                                    // message card error status
+                                    storage[tempID] = tempID;
+                                    errorMessageCard(tempID);
+                                    console.error(data.error_msg);
+                                } else {
+                                    
+                                    messagesContainer.find('.mc-sender[data-id="sending"]').remove();
+                                    // get message before the sending one [temporary]
+                                    messagesContainer.find('.message-card[data-id='+data.tempID+']').before(data.message);
+                                    // delete the temporary one
+                                    messagesContainer.find('.message-card[data-id='+data.tempID+']').remove();
+                                    // scroll to bottom
+                                    scrollBottom(messagesContainer);
+                                    // send contact item updates
+                                    if(sendContactItemUpdates(true)){
+                                        //setTimeout(function(){
+                                            updateContatctItem(messenger.split('_')[1]);
+                                        //}, 4000);
+                                    }
+                                }
+                            }
+                        })
+                    }
+                }    
+            })
+        }
+    })
 
     $('.messenger-listView-tabs a[data-view="users"]').addClass('active-tab')
     $('.messenger-tab[data-view="users"]').show();
