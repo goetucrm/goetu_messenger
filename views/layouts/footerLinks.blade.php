@@ -1851,7 +1851,7 @@ $(document).ready(function () {
             formData.append("_token", access_token);
             formData.append("GroupChatName", $('#txtGroupChatName').val());
             $.ajax({
-                url: url+'/createGroupChat',
+                url: '/messenger/createGroupChat',
                 method: 'POST',
                 data: formData,
                 cache: false,
