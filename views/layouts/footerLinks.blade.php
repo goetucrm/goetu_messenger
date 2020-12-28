@@ -364,7 +364,16 @@ function IDinfo(id, type) {
                     $('.add-members').show();
                     $('.group-settings').show();
                     $('#leave-conversation').show();
+                    if(data.fetch['create_by'] !== {{Auth::id()}}) {
+                        $('.messenger-infoView-btns.delete-conversation').addClass('d-none');
+                        $('.messenger-infoView-btns.delete-conversation').removeClass('d-flex');
+                    } else { 
+                        $('.messenger-infoView-btns.delete-conversation').removeClass('d-none');
+                        $('.messenger-infoView-btns.delete-conversation').addClass('d-flex');
+                    }
                 }else{
+                    $('.messenger-infoView-btns.delete-conversation').removeClass('d-none');
+                    $('.messenger-infoView-btns.delete-conversation').addClass('d-flex');
                     // avatar photo
                     $('.messenger-infoView').find('.avatar').css('background-image', 'url("' + data.user_avatar + '")');
                     $('.header-avatar').css('background-image', 'url("' + data.user_avatar + '")');
