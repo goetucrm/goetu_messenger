@@ -312,8 +312,9 @@ class MessagesController extends Controller
                     ->orOn('messages.to_id', '=', 'users.id');
                 })
                 ->where('messages.type', $Type)
-                ->where('messages.from_id', Auth::user()->id)
-                ->orWhere('messages.to_id', Auth::user()->id)
+                ->where(function($q) {
+                    return $q->where('messages.from_id', Auth::user()->id)->orWhere('messages.to_id', Auth::user()->id);
+                })
                 ->orderBy('messages.created_at', 'desc')
                 ->get()
                 ->unique('id');   
