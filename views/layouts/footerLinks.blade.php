@@ -781,13 +781,11 @@ function updateContatctItem(user_id) {
             method: 'POST',
             data: { '_token': access_token, 'user_id': user_id, 'messenger_id': messenger.split('_')[1], 'type': messenger.split('_')[0] },
             dataType: 'JSON',
-            beforeSend: () => {
-                listItem.remove();
-            },
             success: (data) => {
                 // update data-action required with [responsive design]
                 cssMediaQueries();
                 if(listItem.length >= 1){
+                    listItem.remove();
                     $('.listOfContacts').prepend(data.contactItem);
                 }
                 console.log('length:'+ listItem.length);
