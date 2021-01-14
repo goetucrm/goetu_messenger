@@ -17,6 +17,7 @@ use File;
 use Storage;
 use Carbon\Carbon;
 use App\Models\UserTypeReference;
+use App\Models\Country;
 
 class MessagesController extends Controller
 {
@@ -52,6 +53,27 @@ class MessagesController extends Controller
      */
     public function index($id = null)
     {
+        $userTypes = UserTypeReference::where('user_id', Auth::id())->get();
+        $listOfContactsPerDept = [];
+        foreach ($userTypes as $userTypeKey => $userTypeVal) {
+            $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
+                ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)
+                ->orderBy('users.first_name')
+                ->get();
+        }
+        $idList = [];
+        $offlineCount = 0;
+        $onlineCount = 0;
+        foreach ($listOfContactsPerDept as $contactVal) {
+            foreach($contactVal as $value) {
+                if($value->user_id != Auth::id() && !in_array($value->user_id, $idList)) {
+                    $idList[] = $value->user_id;
+                    if($value->is_online == 1 ? $onlineCount++ : $offlineCount++);
+                }
+            }
+        }
+
+        $countries = Country::select('id', 'name')->where('status', 'A')->orderBy('name')->get();
 
         $route = (in_array(\Request::route()->getName(), ['user', config('chatify.path')]))
             ? 'user'
@@ -61,6 +83,9 @@ class MessagesController extends Controller
             'route' => $route,
             'messengerColor' => Auth::user()->messenger_color,
             'dark_mode' => Auth::user()->dark_mode < 1 ? 'light' : 'dark',
+            'offlineCount' => $offlineCount,
+            'onlineCount' => $onlineCount,
+            'countries' => $countries
         ]);
     }
 
@@ -218,6 +243,7 @@ class MessagesController extends Controller
                     Chatify::push('my-channel', 'my-event', [
                         'data' => $dataCounter,
                         'from' => $request['id'],
+                        'sender' => auth()->user()->id,
                         'name' => auth()->user()->first_name.' '.auth()->user()->last_name,
                         'group_name' => $GroupInfo->group_chat_name,
                         'type' => 'group'
@@ -583,9 +609,13 @@ class MessagesController extends Controller
                 }
 
                 $findTheDepartment = DB::table('user_types')
-                ->select('*')
-                ->whereIn('company_id', $companyArray)
-                ->get();
+                    ->select('*');
+                if(Auth::user()->username[0] === "U" || Auth::user()->username === "admin") {
+                    $findTheDepartment = $findTheDepartment->whereIn('company_id', $companyArray);
+                } else {
+                    $findTheDepartment = $findTheDepartment->whereIn('id', [17,21,36,54,78,94,57,46,59,72,73,40,68]);
+                }
+                $findTheDepartment = $findTheDepartment->get();
                 foreach($findTheDepartment as $department){
                     $dataArray = Arr::prepend($dataArray, [$department->id]);
                 }
@@ -594,6 +624,7 @@ class MessagesController extends Controller
                 $records = User::whereNotIn('id', [auth()->user()->id])
                 ->whereIn('user_type_id', $dataArray)
                 ->where(DB::raw('CONCAT(first_name," ",last_name)'), 'LIKE', "%{$input}%");
+                // ->where('username', 'NOT LIKE', 'U%')->where('username','NOT LIKE','admin');
             }else{
                 $records = User::where(DB::raw('CONCAT(first_name," ",last_name)'), 'LIKE', "%{$input}%");
             }
@@ -1106,30 +1137,38 @@ class MessagesController extends Controller
     }
 
     public function contactDept() {
+        $status = $_GET['contactStatus'];
         $userTypes = UserTypeReference::where('user_id', Auth::id())->get();
         $listOfContactsPerDept = [];
         foreach ($userTypes as $userTypeKey => $userTypeVal) {
-            $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
-                ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)
-                ->orderBy('is_online','DESC')
-                ->get();
+            $users = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')->join('countries', 'countries.name', '=', 'users.country')
+                ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)->where('is_online', $status == 'online' ? 1 : 0)
+                ->orderBy('users.first_name');
+            if(isset($_GET['country'])) {
+                $users = $users->where('countries.id', $_GET['country']);
+            }
+            $listOfContactsPerDept[] = $users->get();
+            // $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
+            //     ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)->where('is_online', $status == 'online' ? 1 : 0)
+            //     ->orderBy('users.first_name')
+            //     ->get();
         }
-        $departmentContact = User::where('user_type_id', Auth::user()->user_type_id)->orderBy('is_online','DESC')->get();
+        // $departmentContact = User::where('user_type_id', Auth::user()->user_type_id)->orderBy('is_online','DESC')->get();
         $list = '';
-        $onlineCount = 0;
+        $dataCount = 0;
         $idList = [];
         foreach ($listOfContactsPerDept as $contactVal) {
             foreach($contactVal as $value) {
                 if($value->user_id != Auth::id() && !in_array($value->user_id, $idList)) {
                     $idList[] = $value->user_id;
                     $list .= view('Chatify::layouts.listOfContacts', compact('value'))->render();
-                    $onlineCount += $value->is_online == '1' ? 1 : 0;
+                    $dataCount += 1;
                 }
             }
         }
         return response()->json([
             'contacts' => count($listOfContactsPerDept) > 0 ? $list : '<br><p class="message-hint"><span>Your contact list is empty</span></p>',
-            'onlineCount' => $onlineCount
+            'count' => $dataCount
         ]);
         // foreach ($departmentContact as $key => $value) {
         //     if($value->id != Auth::id()) {

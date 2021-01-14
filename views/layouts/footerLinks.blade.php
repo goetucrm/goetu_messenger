@@ -330,7 +330,6 @@ function IDinfo(id, type) {
         getSharedPhotos(id, type);
         // Get info
 
-        console.log('type:'+type);
         $.ajax({
             url : '/messenger/idInfo',
             method: 'POST',
@@ -345,7 +344,6 @@ function IDinfo(id, type) {
                 // focus on messaging input
                 messageInput.focus();
                 // update info in view
-                console.log(data);
                 $('.messenger-infoView .info-name').empty().html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
                 $('.m-header-messaging .user-name').empty().html(data.fetch['first_name'] ? data.fetch['first_name'] + " " + data.fetch['last_name'] : data.fetch['group_chat_name']);
                 $('.chat-layers').show();
@@ -407,72 +405,75 @@ function IDinfo(id, type) {
  * Send message function
  *-------------------------------------------------------------
  */
+let sending = 0;
 function sendMessage() {
     temporaryMsgId += 1;
     let tempID = 'temp_' + temporaryMsgId;
     let hasFile = $('.upload-attachment').val() ? true : false;
-    if ($.trim(messageInput.val()).length > 0 || hasFile) {
-        const formData = new FormData($("#message-form")[0]);
-        formData.append('id', messenger.split('_')[1]);
-        formData.append('type', messenger.split('_')[0]);
-        formData.append('temporaryMsgId', tempID);
-        formData.append('_token', access_token);
-        console.log('ID:'+messenger.split('_')[1]);
-        console.log('Type:'+messenger.split('_')[0]);
-        $.ajax({
-            url: $("#message-form").attr('action'),
-            method: 'POST',
-            data: formData,
-            dataType: 'JSON',
-            processData: false,
-            contentType: false,
-            beforeSend: () => {
-                // remove message hint
-                $(".message-hint").remove();
-                // append message
-                hasFile
-                    ? messagesContainer.find('.messages').append(sendigCard(messageInput.val() + '\n' + loadingSVG('28px'), tempID))
-                    : messagesContainer.find('.messages').append(sendigCard(messageInput.val(), tempID));
-                // scroll to bottom
-                scrollBottom(messagesContainer);
-                messageInput.css({ 'height': '42px' });
-                // form reset and focus
-                $("#message-form").trigger("reset");
-                cancelAttachment();
-                messageInput.focus();
-            },
-            success: (data) => {
-                
-                if (data.error > 0) {
-                    // message card error status
-                    storage[tempID] = tempID;
-                    errorMessageCard(tempID);
-                } else {
-                    
-                    messagesContainer.find('.mc-sender[data-id="sending"]').remove();
-                    // get message before the sending one [temporary]
-                    messagesContainer.find('.message-card[data-id='+data.tempID+']').before(data.message);
-                    // delete the temporary one
-                    messagesContainer.find('.message-card[data-id='+data.tempID+']').remove();
+    if(sending === 0) {
+        if ($.trim(messageInput.val()).length > 0 || hasFile) {
+            const formData = new FormData($("#message-form")[0]);
+            formData.append('id', messenger.split('_')[1]);
+            formData.append('type', messenger.split('_')[0]);
+            formData.append('temporaryMsgId', tempID);
+            formData.append('_token', access_token);
+            $.ajax({
+                url: $("#message-form").attr('action'),
+                method: 'POST',
+                data: formData,
+                dataType: 'JSON',
+                processData: false,
+                contentType: false,
+                beforeSend: () => {
+                    sending += 1;
+                    // remove message hint
+                    $(".message-hint").remove();
+                    // append message
+                    hasFile
+                        ? messagesContainer.find('.messages').append(sendigCard(messageInput.val() + '\n' + loadingSVG('28px'), tempID))
+                        : messagesContainer.find('.messages').append(sendigCard(messageInput.val(), tempID));
                     // scroll to bottom
                     scrollBottom(messagesContainer);
-                    // send contact item updates
-                    if(sendContactItemUpdates(true)){
-                        //setTimeout(function(){
-                            updateContatctItem(messenger.split('_')[1]);
-                        //}, 4000);
+                    messageInput.css({ 'height': '42px' });
+                    // form reset and focus
+                    $("#message-form").trigger("reset");
+                    cancelAttachment();
+                    messageInput.focus();
+                },
+                success: (data) => {
+                    sending -= 1;
+                    if (data.error > 0) {
+                        // message card error status
+                        storage[tempID] = tempID;
+                        errorMessageCard(tempID);
+                    } else {
+                        
+                        messagesContainer.find('.mc-sender[data-id="sending"]').remove();
+                        // get message before the sending one [temporary]
+                        messagesContainer.find('.message-card[data-id='+data.tempID+']').before(data.message);
+                        // delete the temporary one
+                        messagesContainer.find('.message-card[data-id='+data.tempID+']').remove();
+                        // scroll to bottom
+                        scrollBottom(messagesContainer);
+                        // send contact item updates
+                        if(sendContactItemUpdates(true)){
+                            //setTimeout(function(){
+                                updateContatctItem(messenger.split('_')[1]);
+                            //}, 4000);
+                        }
+                        //alert(data.tempID);
                     }
-                    //alert(data.tempID);
+                },
+                error: () => {
+                    sending -= 1;
+                    storage[tempID] = formData
+                    // message card error status
+                    errorMessageCard(tempID);
+                    // error log
+                    console.error('Failed sending the message! Please, check your server response');
                 }
-            },
-            error: () => {
-                storage[tempID] = formData
-                // message card error status
-                errorMessageCard(tempID);
-                // error log
-                console.error('Failed sending the message! Please, check your server response');
-            }
-        });
+            });
+        }
     }
     return false;
 }
@@ -620,11 +621,13 @@ channel.bind('client-seen', function (data) {
 channel.bind('client-contactItem', function (data) {
     if(data.type == 'user'){
         if (data.update_for == auth_id) {
-            data.updating == true ? updateContatctItem(data.update_to)
+            // data.updating == true ? updateContatctItem(data.update_to)
+            //     : console.error('[Contact Item updates] Updating failed!');
+            data.updating == true ? getContacts(0)
                 : console.error('[Contact Item updates] Updating failed!');
         }
     }else{
-        
+        getContacts(0)
     }
 });
 
@@ -674,7 +677,7 @@ function makeSeen(status) {
         data: { '_token': access_token, 'id': messenger.split('_')[1], 'type': messenger.split('_')[0]},
         dataType: 'JSON',
         success: (data) => {
-            console.log('[seen] Messages seen - ' + messenger.split('_')[1]);
+            // console.log('[seen] Messages seen - ' + messenger.split('_')[1]);
         }
     });
     return channel.trigger('client-seen', {
@@ -748,15 +751,16 @@ function checkInternet(state, selector) {
  * Get contacts
  *-------------------------------------------------------------
  */
-function getContacts() {
-    $('.listOfContacts').empty().html(listItemLoading(4));
+function getContacts(isReload = 1) {
+    if(isReload === 1) {
+        $('.listOfContacts').empty().html(listItemLoading(4));
+    }
     $.ajax({
         url: '/messenger/getContacts',
         method: 'POST',
         data: { '_token': access_token, 'messenger_id': messenger.split('_')[1], 'type': searchingMode  },
         dataType: 'JSON',
         success: (data) => {
-            console.log(data);
             $('.listOfContacts').empty().html('');
             $('.listOfContacts').empty().html(data.contacts);
             // update data-action required with [responsive design]
@@ -782,13 +786,12 @@ function updateContatctItem(user_id) {
             data: { '_token': access_token, 'user_id': user_id, 'messenger_id': messenger.split('_')[1], 'type': messenger.split('_')[0] },
             dataType: 'JSON',
             success: (data) => {
+                listItem.remove();
                 // update data-action required with [responsive design]
                 cssMediaQueries();
                 if(listItem.length >= 1){
-                    listItem.remove();
                     $('.listOfContacts').prepend(data.contactItem);
                 }
-                console.log('length:'+ listItem.length);
             },
             error: () => {
                 console.error('Server error, check your response');
@@ -802,7 +805,6 @@ function updateContatctItem(user_id) {
  *-------------------------------------------------------------
  */
 function star(user_id) {
-    console.log(messenger);
     if (messenger.split('_')[1] != auth_id) {
         $.ajax({
             url : '/messenger/star',
@@ -1043,7 +1045,6 @@ const resendUnsent = () => {
  */
 $(document).ready(function () {
     searchingMode = "users";
-    console.log(searchingMode);
     // Header avatar
     $('.header-avatar').css('background-image', 'url("/images/user_img/goetu-profile.png")');
     // avatar photo
@@ -1078,7 +1079,6 @@ $(document).ready(function () {
 
     // check if pusher has access to the channel [Internet status]
     pusher.connection.bind('state_change', function (states) {
-        console.log("states: ", states)
         let selector = $('.internet-connection');
         checkInternet(states.current, selector);
         // listening for pusher:subscription_succeeded
@@ -1117,7 +1117,6 @@ $(document).ready(function () {
                                 errorMessageCard(_dataId);
                                 console.error(data.error_msg);
                             } else {
-                                console.log('success');
                                 messagesContainer.find('.mc-sender[data-id="sending"]').remove();
                                 // get message before the sending one [temporary]
                                 messagesContainer.find('.message-card[data-id='+data.temporaryMsgId+']').before(data.message);
@@ -1242,12 +1241,10 @@ $(document).ready(function () {
         if(dataView == "users"){
             searchingMode = "users";
             getContacts()
-            console.log(searchingMode);
             
         }else{
             searchingMode = "groups";
             getContacts()
-            console.log(searchingMode);
         }
     });
 
@@ -1263,7 +1260,6 @@ $(document).ready(function () {
         previous_last_date = null;
         messenger = $(this).find('p[data-id]').attr('data-id');
         IDinfo(messenger.split('_')[1], messenger.split('_')[0]);
-        console.log(messenger.split('_')[1]+' + '+messenger.split('_')[0]);
     });
 
     // show info side button
@@ -1517,7 +1513,6 @@ $(document).ready(function () {
 
     // Show Create GC Modal
     $('.add-members').on('click', function(){
-        console.log(messenger);
         $.ajax({
             url: url+'/listOfMembers',
             method: 'POST',
@@ -1672,7 +1667,6 @@ $(document).ready(function () {
         var pos = $('.app-scroll').scrollTop();
         if (pos == 0) {
             if(loading == 0){
-                console.log(previous_last_date, ' ', last_date)
                 if(previous_last_date !== last_date) {
                     $.ajax({
                         url: '/messenger/fetchMessages',
@@ -1683,7 +1677,6 @@ $(document).ready(function () {
                             loading = 1;
                         },
                         success: (data) => {
-                            console.log(data);
                             loading = 0
                             previous_last_date = last_date;
                             last_date = data.last_date.date !== undefined ? data.last_date.date : last_date;
@@ -2146,13 +2139,14 @@ $(document).ready(function () {
         
         });
     $('#showContacts').click(function() {
+        var status = $('.online-offline-tabs a.active-tab').attr('contact-status');
       $.ajax({
-        url: '/messenger/getDeptContact',
+        url: '/messenger/getDeptContact?contactStatus='+status,
         method: 'GET',
 
         success: (data) => {
             $('#listOfDeptContacts').empty().html(data.contacts);
-            $('#onlineCount').empty().html(data.onlineCount)
+            $('.online-offline-tabs a.active-tab .count').empty().html(data.count)
         },
         error: () => {
             console.error('Server error, check your response');
@@ -2168,6 +2162,47 @@ $(document).ready(function () {
       getContacts();
       $('#contacts').addClass('d-none');
       $('#chatHistory').removeClass('d-none');
+    })
+
+    $('.online-offline-tabs').find('a').click(function() {
+        $('.online-offline-tabs a.active-tab').removeClass('active-tab');
+        $(this).addClass('active-tab');
+
+        var status = $(this).attr('contact-status');
+        $.ajax({
+            url: '/messenger/getDeptContact?contactStatus='+status,
+            method: 'GET',
+
+            success: (data) => {
+                $('#listOfDeptContacts').empty().html(data.contacts);
+                $(this).find('.count').empty().html(data.count)
+            },
+            error: () => {
+                console.error('Server error, check your response');
+            }
+        })
+        
+        $('#chatHistory').addClass('d-none');
+        $('#contacts').removeClass('d-none');
+        $('.messenger-tab[data-view=contacts]').show()
+    })
+
+    $('#countryFilter').change(function() {
+        // $('#departmentFilter').removeClass('d-none');
+
+        var status = $('.online-offline-tabs a.active-tab').attr('contact-status');
+        $.ajax({
+            url: '/messenger/getDeptContact?contactStatus='+status+'&country='+$(this).val(),
+            method: 'GET',
+
+            success: (data) => {
+                $('#listOfDeptContacts').empty().html(data.contacts);
+                $('.online-offline-tabs a.active-tab .count').empty().html(data.count)
+            },
+            error: () => {
+                console.error('Server error, check your response');
+            }
+        })
     })
 });
 

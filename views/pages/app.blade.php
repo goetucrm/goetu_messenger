@@ -19,7 +19,7 @@
                             <a href="/logout" class="dropdown-item" style="color: #6c7283;">Logout</a>
                         </div>
                     </div>
-                    <span class="messenger-headTitle">{{Auth::user()->first_name.' '.Auth::user()->last_name}}</span> 
+                    <span class="messenger-headTitle {{Auth::user()->dark_mode == '1' ? 'text-white' : ''}}">{{Auth::user()->first_name.' '.Auth::user()->last_name}}</span> 
                     {{-- header buttons --}}
                     <nav class="m-header-right my-2">
                         <a href="#"><i class="fas fa-cog settings-btn"></i></a>
@@ -86,16 +86,36 @@
         </div>
     </div>
 
-    <div class="messenger-listView d-none" id="contacts">
+    <div class="messenger-listView d-none {{Auth::user()->dark_mode == '1' ? 'text-white' : ''}}" id="contacts">
         <div class="m-header">
             <nav>
                 <a href="#" class="btn" id="closeContacts"><i class="fas fa-arrow-left"></i></a>
                 <span>Contacts</span>
             </nav>
         </div>
-        <div class="mt-5 ml-4">
-            <div class="messenger-tab" data-view="contacts">
-                <span style="font-family: 'Arial'; font-weight: 700; color:rgb(0, 0, 0, .3); font-size: .8rem !important;">Active Contacts (<span id="onlineCount"></span>)</span>
+        <div class="mt-5 ml-4"> 
+            {{-- <div class="row">
+                <div class="col 6">
+                    <select id="countryFilter" class="form-control bg-dark text-white" name="">
+                        <option disabled selected>Filter By Country</option>
+                        @foreach ($countries as $country)
+                            <option value="{{$country->id}}">{{$country->name}}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-6 pl-0">
+                    <select id="departmentFilter" class="form-control bg-dark text-white d-none" name="">
+                        <option disabled selected>Filter By Department</option>
+                    </select>
+                </div>
+            </div> --}}
+            <div class="online-offline-tabs">
+                <a href="#" contact-status="online" class="active-tab">
+                    <span class="count badge badge-success">{{$onlineCount}}</span> Online </span></a>
+                <a href="#" contact-status="offline" class="">
+                    <span class="count badge badge-secondary">{{$offlineCount}}</span> Offline </a>
+            </div>
+            <div class="messenger-tab  {{Auth::user()->dark_mode == '1' ? 'text-white' : ''}}" data-view="contacts">
                 <hr class="my-2">
                 <div id="listOfDeptContacts"><div class="text-center">Loading contacts...</div></div>
             </div>
