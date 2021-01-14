@@ -109,14 +109,14 @@ body{
 	border-radius: 3px;
 	outline: none;
 }
-.messenger-listView-tabs{
+.messenger-listView-tabs, .online-offline-tabs{
 	display: inline-flex;
 	width: 100%;
 	margin-top: 10px;
 	background-color: transparent;
 	box-shadow: 0px 5px 6px rgba(0, 0, 0, 0.06);
 }
-.messenger-listView-tabs a{
+.messenger-listView-tabs a, .online-offline-tabs a{
 	width: 100%;
 	text-align: center;
 	padding: 10px;
@@ -125,7 +125,9 @@ body{
 	transition: background .3s;
 }
 .messenger-listView-tabs a:hover,
-.messenger-listView-tabs a:focus{
+.messenger-listView-tabs a:focus,
+.online-offline-tabs a:hover,
+.online-offline-tabs a:focus{
 	text-decoration: none;
 }
 .messenger-tab{
