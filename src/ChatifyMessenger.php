@@ -419,6 +419,7 @@ class ChatifyMessenger
         $unseenCounter = self::countUnseenMessages($user->id, $type);
         
         if($type == 'user' || $type == 'department_message'){
+            // return $type;
             //dd($lastMessage->from_id);
             $getTheUserInfo = DB::table('users')
             ->select('*')
@@ -436,6 +437,7 @@ class ChatifyMessenger
             ])->render();
 
         }else{
+            // return $type;
             //dd($lastMessage->id);
             $getTheUserInfo = DB::table('chat_groups')
             ->select('*')
