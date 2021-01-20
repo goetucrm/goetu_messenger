@@ -1187,4 +1187,22 @@ class MessagesController extends Controller
             "Status" => "Okay"
         ]);
     }
+
+    public function unreadMesssages() {
+        $selectCountUnseenMessage = DB::table('messages')
+            ->where(function($query){
+                $query->orWhere('to_id', Auth::id());
+            })
+            ->where('seen', 0)
+            ->count();
+            
+        if($selectCountUnseenMessage != 0){
+            $dataCounter = '<label id="notif-count-msgs" class="label-danger notif-count-extras mt-2">'.$selectCountUnseenMessage.'</label>';
+        }else{
+            $dataCounter = '';
+        }
+        return response()->json([
+            'dataCounter' => $dataCounter
+        ]);
+    }
 }
