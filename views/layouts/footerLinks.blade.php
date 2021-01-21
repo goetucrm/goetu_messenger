@@ -405,12 +405,10 @@ function IDinfo(id, type) {
  * Send message function
  *-------------------------------------------------------------
  */
-let sending = 0;
 function sendMessage() {
     temporaryMsgId += 1;
     let tempID = 'temp_' + temporaryMsgId;
     let hasFile = $('.upload-attachment').val() ? true : false;
-    if(sending === 0) {
         if ($.trim(messageInput.val()).length > 0 || hasFile) {
             const formData = new FormData($("#message-form")[0]);
             formData.append('id', messenger.split('_')[1]);
@@ -425,7 +423,6 @@ function sendMessage() {
                 processData: false,
                 contentType: false,
                 beforeSend: () => {
-                    sending += 1;
                     // remove message hint
                     $(".message-hint").remove();
                     // append message
@@ -441,7 +438,6 @@ function sendMessage() {
                     messageInput.focus();
                 },
                 success: (data) => {
-                    sending -= 1;
                     if (data.error > 0) {
                         // message card error status
                         storage[tempID] = tempID;
@@ -458,7 +454,10 @@ function sendMessage() {
                         // send contact item updates
                         if(sendContactItemUpdates(true)){
                             //setTimeout(function(){
+                                
+                            // if(sending === 0) {
                                 updateContatctItem(messenger.split('_')[1]);
+                            // }
                             //}, 4000);
                         }
                         //alert(data.tempID);
@@ -474,7 +473,6 @@ function sendMessage() {
                 }
             });
         }
-    }
     return false;
 }
 
@@ -787,9 +785,12 @@ function updateContatctItem(user_id) {
             dataType: 'JSON',
             success: (data) => {
                 listItem.remove();
+                
+                console.log(listItem);
                 // update data-action required with [responsive design]
                 cssMediaQueries();
                 if(listItem.length >= 1){
+                    $('body').find('.listOfContacts').find('.messenger-list-item[data-contact='+messenger.split('_')[0]+'-'+ user_id + ']').remove();
                     $('.listOfContacts').prepend(data.contactItem);
                 }
             },
