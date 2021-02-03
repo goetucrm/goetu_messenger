@@ -1515,7 +1515,7 @@ $(document).ready(function () {
     // Show Create GC Modal
     $('.add-members').on('click', function(){
         $.ajax({
-            url: url+'/listOfMembers',
+            url: '/messenger/listOfMembers',
             method: 'POST',
             data:{
                 '_token':access_token, 'group_chat': messenger.split('_')[1]
@@ -1743,7 +1743,7 @@ $(document).ready(function () {
 
     $(document).on('click', '.btn-remove-member', function(){
                     $.ajax({
-                    url: url+'/removeMember',
+                    url: '/messenger/removeMember',
                     method: 'POST',
                     data:{
                         '_token':access_token, 'ID':this.id
@@ -1944,7 +1944,7 @@ $(document).ready(function () {
 
     $('.group-settings').click(function(){
         $.ajax({
-            url: url +'/getTheGroupInfo',
+            url: '/messenger/getTheGroupInfo',
             method: 'POST',
             data:{
                 '_token':access_token, 'ID': messenger.split('_')[1]
@@ -1999,7 +1999,7 @@ $(document).ready(function () {
                 formData.append("_token", access_token);
                 formData.append("GroupChatName", $('#txtUpdateGroupChatName').val());
                 $.ajax({
-                    url: url+'/updateGroupChat',
+                    url: '/messenger/updateGroupChat',
                     method: 'POST',
                     data: formData,
                     cache: false,
@@ -2107,7 +2107,7 @@ $(document).ready(function () {
         $('.leave').click(function(){
         
             $.ajax({
-                url: url+'/leaveGroup',
+                url: '/messenger/leaveGroup',
                 method: 'POST',
                 data:{
                     '_token': access_token, 'ID' :messenger.split('_')[1]

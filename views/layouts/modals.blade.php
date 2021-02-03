@@ -106,7 +106,7 @@
           <div class="app-modal-card" data-name="update-group-chat" data-modal='0'>
                   <div class="app-modal-header">Update the Group Chat Information</div>
                   <div class="app-modal-body">
-                      <div class="avatar av-l update-upload-group-avatar-preview" style="background-image: url('https://icons-for-free.com/iconfiles/png/512/human+men+people+users+icon-1320196167246530600.png');"></div>
+                      <div class="avatar av-l update-upload-group-avatar-preview mx-auto" style="background-image: url('https://icons-for-free.com/iconfiles/png/512/human+men+people+users+icon-1320196167246530600.png');"></div>
                       <p class="upload-avatar-details"></p>
                       <label class="app-btn a-btn-primary update">
                           Click here to choose the new group profile photo
