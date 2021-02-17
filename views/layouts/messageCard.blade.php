@@ -46,7 +46,7 @@
     @if($attachment[2] == 'image')
     <div>
         <div class="message-card mc-sender pr-4">
-            <div class="image-file chat-image" style="width: 250px; height: 150px;background-image: url('{{file_exists(public_path('storage/public/attachments/'.$attachment[0])) ? url('storage/public/attachments/'.$attachment[0]) : url('http://api.stg.goetu.com/storage/'.$attachment[0])}}')">
+            <div class="image-file chat-image" style="width: 250px; height: 150px;background-image: url('{{file_exists(public_path('storage/public/attachments/'.$attachment[0])) ? url('storage/public/attachments/'.$attachment[0]) : url((App::environment() == 'local' ? 'http://goetumobile.com:8000/storage/storage/public/attachments/'.$attachment[0] : config('services.mobile_link').'storage/'.$attachment[0]))}}')">
             </div>
         </div>
     </div>
@@ -102,7 +102,7 @@
     @if(@$attachment[2] == 'image')
     <div>
         <div class="message-card mc-sender pr-4">
-            <div class="image-file chat-image" style="width: 250px; height: 150px;background-image: url('{{file_exists(public_path('storage/public/attachments/'.$attachment[0])) ? url('storage/public/attachments/'.$attachment[0]) : url('http://api.stg.goetu.com/storage/'.$attachment[0])}}')">
+            <div class="image-file chat-image" style="width: 250px; height: 150px;background-image: url('{{file_exists(public_path('storage/public/attachments/'.$attachment[0])) ? url('storage/public/attachments/'.$attachment[0]) : url((App::environment() == 'local' ? 'http://goetumobile.com:8000/storage/storage/public/attachments/'.$attachment[0] : config('services.mobile_link').'storage/'.$attachment[0]))}}')">
             </div>
         </div>
     </div>
