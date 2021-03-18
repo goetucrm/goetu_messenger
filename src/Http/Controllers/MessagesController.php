@@ -1189,13 +1189,17 @@ class MessagesController extends Controller
     }
 
     public function unreadMesssages() {
-        $selectCountUnseenMessage = DB::table('messages')
+        $selectCountUnseenMessage = DB::table("messages as m")
+        ->join('chat_group_members as gm', 'gm.group_chat_id', '=', 'm.to_id')
+        ->where('gm.uid', Auth::id())
+        ->where('m.seen', 0)->count();
+        $selectCountUnseenMessage += DB::table('messages')
             ->where(function($query){
                 $query->orWhere('to_id', Auth::id());
             })
             ->where('seen', 0)
             ->count();
-            
+
         if($selectCountUnseenMessage != 0){
             $dataCounter = '<label id="notif-count-msgs" class="label-danger notif-count-extras mt-2">'.$selectCountUnseenMessage.'</label>';
         }else{
