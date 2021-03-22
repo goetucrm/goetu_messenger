@@ -375,11 +375,20 @@ class ChatifyMessenger
      * @return bool
      */
     public function makeSeen($user_id, $type){
+        if($type == 'user') {
+            Message::where('type', $type)
+                    ->where('from_id',$user_id)
+                    ->where('to_id',Auth::user()->id)
+                    ->where('seen', 0)
+                    ->update(['seen' => 1]);
+            return 1;
+        }
+        
         Message::where('type', $type)
-                ->where('from_id',$user_id)
-                ->where('to_id',Auth::user()->id)
-                ->where('seen', 0)
-                ->update(['seen' => 1]);
+        ->where('to_id',$user_id)
+        ->where('seen', 0)
+        ->update(['seen' => 1]);
+
         return 1;
     }
 
