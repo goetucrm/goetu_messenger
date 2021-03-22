@@ -1,7 +1,7 @@
 {{-- ---------------------- Image modal box ---------------------- --}}
 <div id="imageModalBox" class="imageModal">
     <span class="imageModal-close">&times;</span>
-    <img class="imageModal-content" style="width:600px; height:600px;" id="imageModalBoxSrc">
+    <img class="imageModal-content" id="imageModalBoxSrc">
   </div>
   
   {{-- ---------------------- Delete Modal ---------------------- --}}
