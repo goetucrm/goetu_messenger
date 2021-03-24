@@ -2,7 +2,7 @@
 
 namespace Chatify;
 
-use Chatify\Http\Models\Message;
+use App\Models\Messages;
 use Chatify\Http\Models\Favorite;
 use Pusher\Pusher;
 use Illuminate\Support\Facades\Auth;
@@ -334,17 +334,17 @@ class ChatifyMessenger
     public function fetchMessagesQuery($user_id, $type){
 
         if($type == 'group'){
-            return Message::where('type', $type)
+            return Messages::where('type', $type)
             ->where('to_id', $user_id);
         }else{
-            return Message::whereIn('type', [$type])->where(function($q) use ($user_id) {
+            return Messages::whereIn('type', [$type])->where(function($q) use ($user_id) {
                 $q->where(function($q1) use ($user_id){
                         $q1->where('from_id',Auth::user()->id)->where('to_id',$user_id);
                     })->orWhere(function($q1) use ($user_id) {
                         $q1->where('from_id',$user_id)->where('to_id',Auth::id());
                     });
             });
-            return Message::whereIn('type', [$type])->where('from_id',Auth::user()->id)->where('to_id',$user_id)
+            return Messages::whereIn('type', [$type])->where('from_id',Auth::user()->id)->where('to_id',$user_id)
                     ->orWhere('from_id',$user_id)->where('to_id',Auth::user()->id);
         }
         
@@ -357,13 +357,14 @@ class ChatifyMessenger
      * @return void
      */
     public function newMessage($data){
-        $message = new Message();
+        $message = new Messages();
         $message->id = $data['id'];
         $message->type = $data['type'];
         $message->from_id = $data['from_id'];
         $message->to_id = $data['to_id'];
         $message->body = $data['body'];
         $message->attachment = $data['attachment'];
+        $message->seen = 0;
         $message->save();
     }
 
@@ -376,7 +377,7 @@ class ChatifyMessenger
      */
     public function makeSeen($user_id, $type){
         if($type == 'user') {
-            Message::where('type', $type)
+            Messages::where('type', $type)
                     ->where('from_id',$user_id)
                     ->where('to_id',Auth::user()->id)
                     ->where('seen', 0)
@@ -384,12 +385,17 @@ class ChatifyMessenger
             return 1;
         }
         
-        Message::where('type', $type)
-        ->where('to_id',$user_id)
-        ->where('seen', 0)
-        ->update(['seen' => 1]);
+        DB::table('group_message_statuses')
+        ->where('member_id', Auth::user()->id)
+        ->where('gc_id', $user_id)
+        ->update(['unseen_messages' => 0]);
+        // Messages::where('type', $type)
+        // ->where('to_id',$user_id)
+        // ->where('seen', 0)
+        // ->update(['seen' => 1]);
 
         return 1;
+
     }
 
     /**
@@ -409,7 +415,7 @@ class ChatifyMessenger
      * @return Collection
      */
     public function countUnseenMessages($user_id, $type){
-        return Message::where('type', $type)->where('from_id',$user_id)->where('to_id',Auth::user()->id)->where('seen',0)->count();
+        return Messages::where('type', $type)->where('from_id',$user_id)->where('to_id',Auth::user()->id)->where('seen',0)->count();
     }
 
     /**
@@ -426,6 +432,13 @@ class ChatifyMessenger
         $lastMessage = self::getLastMessageQuery($user->id, $type);
         // Get Unseen messages counter
         $unseenCounter = self::countUnseenMessages($user->id, $type);
+
+        if($type == 'group') {
+            $unseenCounter = DB::table('group_message_statuses')
+                ->where('member_id', Auth::id())
+                ->where('gc_id', $user->id)
+                ->first()->unseen_messages;
+        }
         
         if($type == 'user' || $type == 'department_message'){
             // return $type;
