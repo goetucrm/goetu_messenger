@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Chatify;
 
+use App\Models\ChatGroup;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Response;
@@ -195,6 +196,16 @@ class MessagesController extends Controller
                 'body' => trim(htmlentities($request['message'])),
                 'attachment' => ($attachment) ? $attachment . ',' . $attachment_title : null,
             ]);
+
+            if($request['type'] == 'group') {
+                DB::table('group_message_statuses')
+                    ->where('gc_id', $request['id'])
+                    ->where('member_id', '!=' , Auth::user()->id)
+                    ->update([
+                        'unseen_messages' => DB::raw('(unseen_messages + 1)'),
+                        'updated_at' => date('Y-m-d h:i:s')
+                    ]);
+            }
             
             $newID  = $request['type']."-".$messageID;
 
@@ -209,23 +220,23 @@ class MessagesController extends Controller
                 'message' => Chatify::messageCard($messageData, 'default')
             ]);
             
-            $selectCountUnseenMessage = DB::table('messages')
-            ->where(function($query){
-                $query->orWhere('to_id', auth()->user()->id);
-            })
-            ->where('seen', 0)
-            ->count();
+            // $selectCountUnseenMessage = DB::table('messages')
+            // ->where(function($query){
+            //     $query->orWhere('to_id', auth()->user()->id);
+            // })
+            // ->where('seen', 0)
+            // ->count();
 
-            if($selectCountUnseenMessage != 0){
-                $dataCounter = '<label id="notif-count-msgs" class="label-danger notif-count-extras">'.$selectCountUnseenMessage.'</label>';
-            }else{
-                $dataCounter = '';
-            }
+            // if($selectCountUnseenMessage != 0){
+            //     $dataCounter = '<label id="notif-count-msgs" class="label-danger notif-count-extras">'.$selectCountUnseenMessage.'</label>';
+            // }else{
+            //     $dataCounter = '';
+            // }
 
             if($request['type'] == 'user'){
                 // send to user using pusher
                 Chatify::push('my-channel', 'my-event', [
-                    'data' => $dataCounter,
+                    'data' => $this->unreadMesssages(),
                     'to_id' => $request['id'],
                     'status' => $request['id'] == auth()->user()->id ? 1 : 0,
                     'name' => auth()->user()->first_name.' '.auth()->user()->last_name,
@@ -241,7 +252,7 @@ class MessagesController extends Controller
 
                     // send to user using pusher
                     Chatify::push('my-channel', 'my-event', [
-                        'data' => $dataCounter,
+                        'data' => $this->unreadMesssages(),
                         'from' => $request['id'],
                         'sender' => auth()->user()->id,
                         'name' => auth()->user()->first_name.' '.auth()->user()->last_name,
@@ -501,6 +512,13 @@ class MessagesController extends Controller
                 'group_chat_id' => $GroupChatID,
                 'uid' => $addMembers,
                 'type' => 'Member'
+            ]);
+
+            DB::table('group_message_statuses')->insert([
+                'gc_id' => $GroupChatID,
+                'member_id' => $addMembers,
+                'unseen_messages' => 0,
+                'created_at' => date('Y-m-d h:i:s')
             ]);
             
             // send to database
@@ -1189,16 +1207,13 @@ class MessagesController extends Controller
     }
 
     public function unreadMesssages() {
-        $selectCountUnseenMessage = DB::table("messages as m")
-        ->join('chat_group_members as gm', 'gm.group_chat_id', '=', 'm.to_id')
-        ->where('gm.uid', Auth::id())
-        ->where('m.seen', 0)->count();
-        $selectCountUnseenMessage += DB::table('messages')
-            ->where(function($query){
-                $query->orWhere('to_id', Auth::id());
-            })
-            ->where('seen', 0)
-            ->count();
+
+        $selectCountUnseenMessage = DB::table('group_message_statuses')
+            ->select(DB::raw('SUM(unseen_messages) as count'))
+            ->where('member_id', Auth::id())
+            ->first()->count;
+
+        $selectCountUnseenMessage += DB::table('messages')->where('to_id', Auth::id())->where('seen', 0)->count();
 
         if($selectCountUnseenMessage != 0){
             $dataCounter = '<label id="notif-count-msgs" class="label-danger notif-count-extras mt-2">'.$selectCountUnseenMessage.'</label>';
