@@ -121,6 +121,18 @@ class MessagesController extends Controller
         if ($request['type'] == 'user') {
             $fetch = User::where('id', $request['id'])->first();
             // send the response
+            if(isset($request['platform'])) {
+                return response()->json([
+                    'flag' => 'Success',
+                    'userMessage' => 'Fetch Data',
+                    'internalMessage' => [
+                        'favorite' => $favorite,
+                        'fetch' => $fetch,
+                        'user_avatar' => $fetch->image,
+                        'user_name' => $fetch->first_name.' '.$fetch->last_name,
+                    ]
+                ]);
+            }
             return Response::json([
                 'favorite' => $favorite,
                 'fetch' => $fetch,
@@ -319,7 +331,8 @@ class MessagesController extends Controller
                     'flag' => 'Success',
                     'userMessage' => 'Messenger',
                     'internalMessage' => [
-                            'count' => $query->count(),
+                            'url' => url()->current(),
+                            'count' => $messages->count(),
                             'last_date' => $lastDate,
                             'messages' => $rawMessages
                         ]
@@ -349,6 +362,13 @@ class MessagesController extends Controller
      */
     public function seen(Request $request){
         $seen = Chatify::makeSeen($request['id'], $request['type']);
+        if(isset($request['platform'])) {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Status',
+                'internalMessage' => $seen
+            ]);
+        }
         return Response::json([
             'status' => $seen,
         ], 200);
@@ -643,6 +663,14 @@ class MessagesController extends Controller
             Chatify::makeInFavorite($request['user_id'], 1);
             $status = 1;
         }
+        
+        if(isset($request['platform'])) {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Create Favorite',
+                'internalMessage' => $status
+            ]);
+        }
         return Response::json([
             'status' => @$status,
         ], 200);
@@ -657,11 +685,23 @@ class MessagesController extends Controller
     public function getFavorites(Request $request)
     {
         $favoritesList = null;
-        $favorites = Favorite::where('user_id', Auth::user()->id);
-        foreach ($favorites->get() as $favorite) {
+        $favorites = Favorite::where('user_id', Auth::user()->id)->get();
+        foreach ($favorites as $favorite) {
             $user = User::where('id', $favorite->favorite_id)->first();
+            $favorite['first_name'] = $user->first_name;
+            $favorite['last_name'] = $user->last_name;
+            $favorite['image'] = $user->image;
+            $favorite['status'] = $user->status;
+            $favorite['active_status'] = $user->active_status;
             $favoritesList .= view('Chatify::layouts.favorite', [
                 'user' => $user,
+            ]);
+        }
+        if(isset($request['platform'])) {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Get Favorite List',
+                'internalMessage' => $favorites
             ]);
         }
         return Response::json([
@@ -864,6 +904,13 @@ class MessagesController extends Controller
     public function sharedPhotos(Request $request)
     {
         $shared = Chatify::getSharedPhotos($request['user_id'], $request['type']);
+        if(isset($request['platform'])) {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Shared Photos',
+                'internalMessage' => $shared
+            ]);
+        }
         $sharedPhotos = null;
         for ($i = 0; $i < count($shared); $i++) {
             $sharedPhotos .= view('Chatify::layouts.listItem', [
