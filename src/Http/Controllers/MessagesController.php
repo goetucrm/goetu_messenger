@@ -262,6 +262,21 @@ class MessagesController extends Controller
             }
         }
 
+        if(isset($request->platform)) {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Messenger',
+                'internalMessage' => [
+                        'status' => '200',
+                        'error' => $error_msg ? 1 : 0,
+                        'error_msg' => $error_msg,
+                        'message' => $messageData,
+                        // 'tempID' => $request['temporaryMsgId'],
+                        'type' => $request['type'],
+                    ]
+            ]);
+        }
+
         // send the response
         return Response::json([
             'status' => '200',
@@ -291,11 +306,24 @@ class MessagesController extends Controller
         $messages = $query->get()->reverse();
         if ($query->count() > 0) {
             $lastDate = $query->get()->reverse()->first()->created_at;
+            $rawMessages = [];
             foreach ($messages as $message) {
                     $newID = $request['type'].'-'.$message->id;
+                    $rawMessages[] = Chatify::fetchMessage($newID);
                     $allMessages .= Chatify::messageCard(
                         Chatify::fetchMessage($newID)
                     );
+            }
+            if(isset($request['platform'])) {
+                return response()->json([
+                    'flag' => 'Success',
+                    'userMessage' => 'Messenger',
+                    'internalMessage' => [
+                            'count' => $query->count(),
+                            'last_date' => $lastDate,
+                            'messages' => $rawMessages
+                        ]
+                ]);
             }
             return Response::json([
                 'count' => $query->count(),
@@ -341,7 +369,48 @@ class MessagesController extends Controller
             $Type = 'group';
         }
 
-        //dd($Type);
+        if(isset($request['platform'])) {
+            $users = Message::select('users.*')
+                ->join('users', function($join) {
+                    $join->on('messages.from_id', '=', 'users.id')
+                        ->orOn('messages.to_id', '=', 'users.id');
+                })
+                ->where('messages.type', $Type)
+                ->where(function($q) {
+                    return $q->where('messages.from_id', Auth::user()->id)->orWhere('messages.to_id', Auth::user()->id);
+                })
+                ->where('users.id', '!=', Auth::user()->id)
+                ->orderBy('messages.created_at', 'desc')
+                ->get()
+                ->unique('id'); 
+            foreach($users as $key => $user) {
+                $user['lastMessage'] = Message::select('messages.*')
+                                        ->join('users', function($join) {
+                                            $join->on('messages.from_id', '=', 'users.id')
+                                                ->orOn('messages.to_id', '=', 'users.id');
+                                        })
+                                        ->where('messages.type', $Type)
+                                        ->where(function($q) use ($user) {
+                                            return $q->where('messages.from_id', $user->id)->orWhere('messages.to_id', $user->id);
+                                        })
+                                        // ->where('users.id', '!=', Auth::user()->id)
+                                        ->orderBy('messages.created_at', 'desc')
+                                        ->first();
+                $user['unseen_messages_count'] = Message::where(function($q) use ($user) {
+                                            return $q->where('to_id', Auth::id())->where('from_id', $user->id);
+                                        })
+                                        ->where('seen', 0)->count();
+            }
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Contact List',
+                'internalMessage' => [
+                        'type' => $Type,
+                        'url' => url()->current(),
+                        'user' => $users
+                    ]
+            ]);
+        }
 
         if($Type == "user"){
             $users = Message::join('users',  function ($join) {
@@ -373,13 +442,14 @@ class MessagesController extends Controller
                 ->get()
                 ->unique('id');
         }
-    
+        
         if ($users->count() > 0) {
             $contacts = null;
+            $userCollections = [];
             foreach ($users as $user) {
                 if ($user->id != Auth::user()->id) {
                     if($Type == 'user'){
-                        $userCollection = User::where('id', $user->id)->first();
+                        $userCollections[] = $userCollection = User::where('id', $user->id)->first();
                         $contacts .= Chatify::getContactItem($request['messenger_id'], $userCollection, $Type);
                     }else{
                         $userCollection = DB::table('chat_groups')
@@ -394,7 +464,7 @@ class MessagesController extends Controller
                 }
             }
         }
-
+        
         //dd($contacts);
         return Response::json([
             'contacts' => $users->count() > 0 ? $contacts : '<br><p class="message-hint"><span>Your contact list is empty</span></p>',
@@ -611,8 +681,8 @@ class MessagesController extends Controller
         $getRecords = null;
         $searchingMode = $request['searchingMode'];
         $input = trim(filter_var($request['input'], FILTER_SANITIZE_STRING));
-        
-        if($searchingMode == "users"){
+        $platform = isset($request->platform) ? $request->platform : '';
+        if($searchingMode == "users" || $searchingMode == "user"){
             if(auth()->user()->company_id != -1){
                 $dataArray = array();
                 $companyArray = array();
@@ -631,17 +701,21 @@ class MessagesController extends Controller
                 if(Auth::user()->username[0] === "U" || Auth::user()->username === "admin") {
                     $findTheDepartment = $findTheDepartment->whereIn('company_id', $companyArray);
                 } else {
-                    $findTheDepartment = $findTheDepartment->whereIn('id', [17,21,36,54,78,94,57,46,59,72,73,40,68]);
+                    // $findTheDepartment = $findTheDepartment->whereIn('id', [17,21,36,54,78,94,57,46,59,72,73,40,68]);
+                    $findTheDepartment = $findTheDepartment->where('is_chat_support', 1);
                 }
                 $findTheDepartment = $findTheDepartment->get();
                 foreach($findTheDepartment as $department){
                     $dataArray = Arr::prepend($dataArray, [$department->id]);
                 }
-                $dataArray = Arr::prepend($dataArray, [11]);
-                $dataArray = Arr::prepend($dataArray, [14]);
-                $records = User::whereNotIn('id', [auth()->user()->id])
-                ->whereIn('user_type_id', $dataArray)
-                ->where(DB::raw('CONCAT(first_name," ",last_name)'), 'LIKE', "%{$input}%");
+                // $dataArray = Arr::prepend($dataArray, [11]);
+                // $dataArray = Arr::prepend($dataArray, [14]);
+                // return $dataArray;
+                $records = User::select('users.*')
+                ->whereNotIn('users.id', [auth()->user()->id])
+                ->leftJoin('user_type_references as utr', 'utr.user_id', '=', 'users.id')
+                ->whereIn('utr.user_type_id', $dataArray)
+                ->where(DB::raw('CONCAT(users.first_name," ",users.last_name)'), 'LIKE', "%{$input}%");
                 // ->where('username', 'NOT LIKE', 'U%')->where('username','NOT LIKE','admin');
             }else{
                 $records = User::where(DB::raw('CONCAT(first_name," ",last_name)'), 'LIKE', "%{$input}%");
@@ -678,7 +752,17 @@ class MessagesController extends Controller
                 ])->render();
             }
         }
-
+        if($platform === 'mobile') {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Messages',
+                'internalMessage' => [
+                        'get' => 'search_item',
+                        'type' => $searchingMode,
+                        $searchingMode => $records->count() > 0 ? $records->get() : []
+                    ]
+            ]);
+        }
         return Response::json([
             'records' => $records->count() > 0
                 ? $getRecords
@@ -800,6 +884,15 @@ class MessagesController extends Controller
      */
     public function deleteConversation(Request $request){
         $delete = Chatify::deleteConversation($request['id'], $request['type']);
+        if(isset($request['platform'])) {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Messenger',
+                'internalMessage' => [
+                    'deleted' => $delete ? 1 : 0,
+                ]
+            ]);
+        }
         return Response::json([
             'deleted' => $delete ? 1 : 0,
         ], 200);
@@ -884,6 +977,15 @@ class MessagesController extends Controller
             ? User::where('id', $request['user_id'])->update(['active_status' => 1])
             : User::where('id', $request['user_id'])->update(['active_status' => 0]);
         // send the response
+        if(isset($request['platform'])) {
+            return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Messenger',
+                'internalMessage' => [
+                    'status' => $update,
+                ]
+            ]);
+        }
         return Response::json([
             'status' => $update,
         ], 200);
@@ -1222,6 +1324,51 @@ class MessagesController extends Controller
         }
         return response()->json([
             'dataCounter' => $dataCounter
+        ]);
+    }
+
+    public function userProductAccess() {
+
+        $userProductAccess = DB::table('user_type_references as utr')
+            ->select('p.*')
+            ->join('user_types as ut', 'ut.id', '=', 'utr.user_type_id')
+            ->join('user_type_product_accesses as utpa', 'ut.id', '=', 'utpa.user_type_id')
+            ->join('products as p', 'p.id', '=', 'utpa.product_id')
+            ->where('user_id', auth()->user()->id)
+            ->orderBy('p.id')
+            ->get();
+        return response()->json([
+                'flag' => 'Success',
+                'userMessage' => 'Products',
+                'internalMessage' => [
+                        'count' => $userProductAccess->count(),
+                        'products' => $userProductAccess
+                    ]
+            ]);
+    }
+
+    public function productChatSupport($product_id) {
+        $chatSupports = DB::table('user_types as ut')
+            ->select(
+                'u.*',
+                'ut.id as user_types_id',
+                'ut.description as user_type_description',
+                )
+            ->join('user_type_references as utr', 'utr.user_type_id', '=', 'ut.id')
+            ->join('users as u', 'u.id', '=', 'utr.user_id')
+            ->join('user_type_product_accesses as utpa', 'utpa.user_type_id', '=', 'ut.id')
+            ->where('utpa.product_id', $product_id)
+            ->where('ut.is_chat_support', '1')
+            ->orderBy('u.id')
+            ->get();
+
+        return response()->json([
+            'flag' => 'Success',
+            'userMessage' => 'Product Chat Support',
+            'internalMessage' => [
+                    'count' => $chatSupports->count(),
+                    'chat_supports' => $chatSupports
+                ]
         ]);
     }
 }
