@@ -345,6 +345,18 @@ class MessagesController extends Controller
             ]);
 
         }else{
+            if(isset($request['platform'])) {
+                return response()->json([
+                    'flag' => 'Success',
+                    'userMessage' => 'Messenger',
+                    'internalMessage' => [
+                            'url' => url()->current(),
+                            'count' => $messages->count(),
+                            'last_date' => '',
+                            'messages' => []
+                        ]
+                ]);
+            }
             return Response::json([
                 'count' => $query->count(),
                 'messages' => '<p class="message-hint" style="margin-top:10px;"><span>Say \'hi\' and start messaging</span></p>',
