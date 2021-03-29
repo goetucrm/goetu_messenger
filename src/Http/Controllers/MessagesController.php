@@ -1399,7 +1399,7 @@ class MessagesController extends Controller
             ->select(
                 'u.*',
                 'ut.id as user_types_id',
-                'ut.description as user_type_description',
+                'ut.description as user_type_description'
                 )
             ->join('user_type_references as utr', 'utr.user_type_id', '=', 'ut.id')
             ->join('users as u', 'u.id', '=', 'utr.user_id')
