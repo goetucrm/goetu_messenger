@@ -378,7 +378,7 @@ class MessagesController extends Controller
             return response()->json([
                 'flag' => 'Success',
                 'userMessage' => 'Status',
-                'internalMessage' => $seen
+                'internalMessage' => strval($seen)
             ]);
         }
         return Response::json([
@@ -680,7 +680,7 @@ class MessagesController extends Controller
             return response()->json([
                 'flag' => 'Success',
                 'userMessage' => 'Create Favorite',
-                'internalMessage' => $status
+                'internalMessage' => strval($status)
             ]);
         }
         return Response::json([
@@ -948,7 +948,7 @@ class MessagesController extends Controller
                 'flag' => 'Success',
                 'userMessage' => 'Messenger',
                 'internalMessage' => [
-                    'deleted' => $delete ? 1 : 0,
+                    'deleted' => $delete ? "1" : "0",
                 ]
             ]);
         }
@@ -1040,9 +1040,7 @@ class MessagesController extends Controller
             return response()->json([
                 'flag' => 'Success',
                 'userMessage' => 'Messenger',
-                'internalMessage' => [
-                    'status' => $update,
-                ]
+                'internalMessage' => strval($update)
             ]);
         }
         return Response::json([
