@@ -1370,12 +1370,11 @@ class MessagesController extends Controller
     public function unreadMesssages() {
 
         $selectCountUnseenMessage = DB::table('group_message_statuses')
-            ->select(DB::raw('SUM(unseen_messages) as count'))
-            ->where('member_id', Auth::id())
-            ->first()->count;
+        ->select(DB::raw('SUM(unseen_messages) as count'))
+        ->where('group_message_statuses.member_id', Auth::id())
+        ->first()->count;
 
-        $selectCountUnseenMessage += DB::table('messages')->where('to_id', Auth::id())->where('seen', 0)->count();
-
+        $selectCountUnseenMessage += DB::table('messages')->where('to_id', Auth::id())->where('seen', 0)->where('type', 'user')->count();
         if($selectCountUnseenMessage != 0){
             $dataCounter = '<label id="notif-count-msgs" class="label-danger notif-count-extras mt-2">'.$selectCountUnseenMessage.'</label>';
         }else{
