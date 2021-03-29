@@ -200,7 +200,7 @@ class ChatifyMessenger
                 }elseif($formattedDate->isYesterday()){
                     $Date = 'Yesterday at '.$formattedTime->format('g:i:s a');
                 }else{
-                    $Date = \Carbon\Carbon::parse($msg->created_at)->format('l F d, yy').' at '.$formattedTime->format('g:i:s a');
+                    $Date = \Carbon\Carbon::parse($msg->created_at)->format('l F d, Y').' at '.$formattedTime->format('g:i:s a');
                 }
         
                 return [
@@ -213,8 +213,9 @@ class ChatifyMessenger
                     'message' => $msg->body,
                     'attachment' => [$attachment, $attachment_title, $attachment_type],
                     'moment' => $formattedTime->diffForHumans(),
-                    'date' => \Carbon\Carbon::parse($msg->created_at)->format('l F,dy'),
+                    'date' => \Carbon\Carbon::parse($msg->created_at)->format('l F d, y'),
                     'time' => $Date,
+                    'created_at' => $msg->created_at,
                     'fullTime' => $msg->created_at,
                     'viewType' => $msg->from_id == Auth::user()->id ? 'sender' : 'default',
                     'seen' => $msg->seen,
