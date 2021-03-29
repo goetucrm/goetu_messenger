@@ -1425,7 +1425,7 @@ class MessagesController extends Controller
             'userMessage' => 'Product Chat Support',
             'internalMessage' => [
                     'count' => $chatSupports->count(),
-                    'chat_supports' => $chatSupports
+                    'user' => $chatSupports
                 ]
         ]);
     }
