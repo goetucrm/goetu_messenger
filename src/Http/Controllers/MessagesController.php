@@ -947,9 +947,7 @@ class MessagesController extends Controller
             return response()->json([
                 'flag' => 'Success',
                 'userMessage' => 'Messenger',
-                'internalMessage' => [
-                    'deleted' => $delete ? "1" : "0",
-                ]
+                'internalMessage' => $delete ? "1" : "0"
             ]);
         }
         return Response::json([
