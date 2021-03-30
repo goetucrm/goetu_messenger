@@ -29,13 +29,17 @@ class MessagesController extends Controller
      * @return void
      */
     public function pusherAuth(Request $request){
-        $authData = json_encode([
-            'user_id' => Auth::user()->id,
-            'user_info' => [
-                'name' => Auth::user()->first_name.' '.Auth::user()->last_name
-            ]
-        ]);
         if (Auth::check()) {
+            return Chatify::pusherAuth(
+                $request['channel_name'],
+                $request['socket_id']
+            );
+            $authData = json_encode([
+                'user_id' => Auth::user()->id,
+                'user_info' => [
+                    'name' => Auth::user()->first_name.' '.Auth::user()->last_name
+                ]
+            ]);
             return Chatify::pusherAuth(
                 $request['channel_name'],
                 $request['socket_id'],
