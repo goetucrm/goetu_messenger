@@ -1114,6 +1114,12 @@ class MessagesController extends Controller
             'uid' => auth()->user()->id,
             'type' => 'Administrator'
         ]);
+        DB::table('group_message_statuses')->insert([
+            'gc_id' => $id,
+            'member_id' => auth()->user()->id,
+            'unseen_messages' => 1,
+            'created_at' => date('Y-m-d h:i:s')
+        ]);
 
         
         // send to database
