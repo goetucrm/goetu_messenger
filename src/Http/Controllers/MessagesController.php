@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Chatify;
 
+use App\Contracts\Constant;
 use App\Models\ChatGroup;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -19,6 +20,7 @@ use Storage;
 use Carbon\Carbon;
 use App\Models\UserTypeReference;
 use App\Models\Country;
+use App\Services\Utility\Helper;
 
 class MessagesController extends Controller
 {
@@ -437,6 +439,7 @@ class MessagesController extends Controller
                                         })
                                         ->where('seen', 0)->count();
             }
+            return Helper::responseJson(Constant::FLAG_SUCCESS, 'Contact List', ['type' => $Type, 'url' => url()->current(), 'user' => $users], Constant::STATUS_CODE_SUCCESS);
             return response()->json([
                 'flag' => 'Success',
                 'userMessage' => 'Contact List',
