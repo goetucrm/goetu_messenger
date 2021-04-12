@@ -419,7 +419,7 @@ class MessagesController extends Controller
                 ->orderBy('messages.created_at', 'desc')
                 ->get()
                 ->unique('id'); 
-            foreach($users as $key => $user) {
+            foreach($users as $user) {
                 $user['lastMessage'] = Message::select('messages.*')
                                         ->join('users', function($join) {
                                             $join->on('messages.from_id', '=', 'users.id')
