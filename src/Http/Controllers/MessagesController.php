@@ -421,6 +421,7 @@ class MessagesController extends Controller
                 ->orderBy('messages.created_at', 'desc')
                 ->get()
                 ->unique('id'); 
+            $arr_data = [];
             foreach($users as $user) {
                 $user['lastMessage'] = Message::select('messages.*')
                                         ->join('users', function($join) {
@@ -438,8 +439,9 @@ class MessagesController extends Controller
                                             return $q->where('to_id', Auth::id())->where('from_id', $user->id);
                                         })
                                         ->where('seen', 0)->count();
+                $arr_data[] = $user;
             }
-            return Helper::responseJson(Constant::FLAG_SUCCESS, 'Contact List', ['type' => $Type, 'url' => url()->current(), 'user' => $users], Constant::STATUS_CODE_SUCCESS);
+            return Helper::responseJson(Constant::FLAG_SUCCESS, 'Contact List', ['type' => $Type, 'url' => url()->current(), 'user' => $arr_data], Constant::STATUS_CODE_SUCCESS);
             return response()->json([
                 'flag' => 'Success',
                 'userMessage' => 'Contact List',
