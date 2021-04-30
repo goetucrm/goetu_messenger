@@ -324,6 +324,9 @@ class MessagesController extends Controller
         $messages = $query->get()->reverse();
         if ($query->count() > 0) {
             $lastDate = $query->get()->reverse()->first()->created_at;
+            $parseDate = Carbon::parse($lastDate);
+            $lastDate = $parseDate->getTimezone();
+            $lastDate->date = $parseDate->format('Y-m-d h:i:s');
             $rawMessages = [];
             foreach ($messages as $message) {
                     $newID = $request['type'].'-'.$message->id;
@@ -776,10 +779,10 @@ class MessagesController extends Controller
                 ->whereNotIn('users.id', [auth()->user()->id])
                 ->leftJoin('user_type_references as utr', 'utr.user_id', '=', 'users.id')
                 ->whereIn('utr.user_type_id', $dataArray)
-                ->where(DB::raw('CONCAT(users.first_name," ",users.last_name)'), 'LIKE', "%{$input}%");
+                ->where(DB::raw('CONCAT(users.first_name," ",users.last_name)'), 'LIKE', "%{$input}%")->groupBy('users.id');
                 // ->where('username', 'NOT LIKE', 'U%')->where('username','NOT LIKE','admin');
             }else{
-                $records = User::where(DB::raw('CONCAT(first_name," ",last_name)'), 'LIKE', "%{$input}%");
+                $records = User::where(DB::raw('CONCAT(first_name," ",last_name)'), 'LIKE', "%{$input}%")->groupBy('users.id');
             }
 
             foreach ($records->get() as $record) {
