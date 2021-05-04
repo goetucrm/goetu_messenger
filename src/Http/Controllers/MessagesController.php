@@ -63,11 +63,21 @@ class MessagesController extends Controller
         $userTypes = UserTypeReference::where('user_id', Auth::id())->get();
         $listOfContactsPerDept = [];
         foreach ($userTypes as $userTypeKey => $userTypeVal) {
-            $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
-                ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)
-                ->orderBy('users.first_name')
-                ->get();
+            if($userTypeVal->user_type_id != 8) {
+                $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
+                    ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)
+                    ->orderBy('users.first_name')
+                    ->get();
+            } else {
+                $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
+                    ->join('user_types', 'user_types.id', '=', 'user_type_references.user_type_id')
+                    ->where('user_types.is_chat_support', '1')
+                    ->orderBy('users.first_name')
+                    ->groupBy('users.id')
+                    ->get();
+            }
         }
+        // dd($listOfContactsPerDept);
         $idList = [];
         $offlineCount = 0;
         $onlineCount = 0;
@@ -1334,11 +1344,23 @@ class MessagesController extends Controller
         $userTypes = UserTypeReference::where('user_id', Auth::id())->get();
         $listOfContactsPerDept = [];
         foreach ($userTypes as $userTypeKey => $userTypeVal) {
-            $users = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')->join('countries', 'countries.name', '=', 'users.country')
-                ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)->where('is_online', $status == 'online' ? 1 : 0)
-                ->orderBy('users.first_name');
-            if(isset($_GET['country'])) {
-                $users = $users->where('countries.id', $_GET['country']);
+            if($userTypeVal->user_type_id != 8) {
+                $users = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
+                    ->join('countries', 'countries.name', '=', 'users.country')
+                    ->where('user_type_references.user_type_id', $userTypeVal->user_type_id)
+                    ->where('is_online', $status == 'online' ? 1 : 0)
+                    ->orderBy('users.first_name');
+                if(isset($_GET['country'])) {
+                    $users = $users->where('countries.id', $_GET['country']);
+                }
+            } else {
+                $users = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
+                    ->join('countries', 'countries.name', '=', 'users.country')
+                    ->join('user_types', 'user_types.id', '=', 'user_type_references.user_type_id')
+                    ->where('is_online', $status == 'online' ? 1 : 0)
+                    ->where('user_types.is_chat_support', '1')
+                    ->orderBy('users.first_name')
+                    ->groupBy('users.id');
             }
             $listOfContactsPerDept[] = $users->get();
             // $listOfContactsPerDept[] = User::Join('user_type_references', 'user_type_references.user_id', '=', 'users.id')
